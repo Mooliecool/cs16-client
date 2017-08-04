@@ -132,6 +132,9 @@ void CCVarChecker::AddToCheckList(cvar_t *pCVar, const char *szValue)
 {
 	cvar_check_t check;
 
+	if( !pCVar || !szValue )
+		return;
+
 	check.pCVar = pCVar;
 	check.eCheckType = cvar_check_t::CVARCHECK_SET_STRING;
 	check.szString = szValue;
@@ -142,6 +145,9 @@ void CCVarChecker::AddToCheckList(cvar_t *pCVar, const char *szValue)
 void CCVarChecker::AddToCheckList(cvar_t *pCVar, float flValue)
 {
 	cvar_check_t check;
+
+	if( !pCVar )
+		return;
 
 	check.pCVar = pCVar;
 	check.eCheckType = cvar_check_t::CVARCHECK_SET_FLOAT;

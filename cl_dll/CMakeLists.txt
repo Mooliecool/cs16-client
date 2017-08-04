@@ -197,8 +197,8 @@ set (CLDLL_SOURCES
     ./tri.cpp
 	./util.cpp
 	./view.cpp
-	./input_xash3d.cpp
-	#./input_sdl.cpp
+	#./input_xash3d.cpp
+	./input_sdl.cpp
     ./vgui_parser.cpp
     ./unicode_strtools.cpp
 	./draw_util.cpp
@@ -247,7 +247,7 @@ include_directories (
 	../dlls/
 	../game_shared/
 	../public/
-	${SDL2_INCLUDE_DIR})
+	/usr/include/SDL2 )
 add_library (${CLDLL_LIBRARY} SHARED ${CLDLL_SOURCES})
 add_definitions( -D_CS16CLIENT_ENABLE_GSRC_SUPPORT
 	-DLINUX -D_LINUX -DCLIENT_WEAPONS -DCLIENT_DLL

@@ -16,7 +16,7 @@
 ****/
 #include "events.h"
 
-int g_iRShell, g_iPShell, g_iBlackSmoke, g_iShotgunShell;
+int g_iRShell, g_iPShell, g_iShotgunShell;
 
 /*
 ======================
