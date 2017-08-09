@@ -243,7 +243,7 @@ void CHud :: Init( void )
 	zoom_sens_ratio = CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", 0 );
 
 	m_cvarChecker.Init();
-	m_cvarChecker.AddToCheckList( "cl_lw", 1.0f );
+	m_cvarChecker.AddToCheckList( "cl_lw", GetGameType() == GAME_CZERODS ? 0.0f : 1.0f );
 	m_cvarChecker.AddToCheckList( "cl_predict", 1.0f );
 	m_cvarChecker.AddToCheckList( "sv_skipshield", 1.0f );
 	m_cvarChecker.AddToCheckList( "hand", 0.0f );

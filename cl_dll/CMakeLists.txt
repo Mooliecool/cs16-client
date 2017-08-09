@@ -90,6 +90,7 @@ set (WEAPONEVENT_SRCS
 	./events/event_usp.cpp
 	./events/event_vehicle.cpp
 	./events/event_xm1014.cpp
+	./events/event_czerods.cpp
 	./events/hl_events.cpp
 	./ev_common.cpp
 )
