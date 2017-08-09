@@ -29,11 +29,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class CMenuVideo : public CMenuFramework
 {
+public:
+	CMenuVideo() : CMenuFramework( "CMenuVideo" ) { }
+
 private:
 	void _Init();
-
-	CMenuBackgroundBitmap background;
-	CMenuBannerBitmap banner;
 
 	CMenuPicButton	vidOptions;
 	CMenuPicButton	vidModes;

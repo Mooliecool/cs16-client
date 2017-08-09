@@ -33,8 +33,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class CAdvancedControls : public CMenuFramework
 {
-public:
-
 private:
 	virtual void _Init( void );
 	virtual void _VidInit( void );
@@ -43,8 +41,7 @@ private:
 	void SaveAndPopMenu( void );
 
 public:
-	CMenuBackgroundBitmap background;
-	CMenuBannerBitmap banner;
+	CAdvancedControls() : CMenuFramework("CAdvancedControls") { }
 
 	CMenuPicButton done;
 

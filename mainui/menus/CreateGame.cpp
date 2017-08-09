@@ -38,6 +38,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class CMenuCreateGame : public CMenuFramework
 {
+public:
+	CMenuCreateGame() : CMenuFramework("CMenuCreateGame") { }
 private:
 	virtual void _Init();
 	virtual void _VidInit();
@@ -48,9 +50,6 @@ private:
 	char		mapsDescription[UI_MAXGAMES][256];
 	char		*mapsDescriptionPtr[UI_MAXGAMES];
 
-
-	CMenuBackgroundBitmap background;
-	CMenuBannerBitmap banner;
 	CMenuPicButton	advOptions;
 	CMenuPicButton	done;
 	CMenuPicButton	cancel;
@@ -277,6 +276,8 @@ void CMenuCreateGame::_VidInit()
 	hostName.SetRect( 350, 260, 205, 32 );
 	maxClients.SetRect( 350, 360, 205, 32 );
 	password.SetRect( 350, 460, 205, 32 );
+
+	advOptions.SetGrayed( !UI_AdvServerOptions_IsAvailable() );
 }
 
 /*

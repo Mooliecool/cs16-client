@@ -33,9 +33,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "BtnsBMPTable.h"
 #include "YesNoMessageBox.h"
 #include "ConnectionProgress.h"
+#include "BackgroundBitmap.h"
+#include "con_nprint.h"
 
 cvar_t		*ui_precache;
 cvar_t		*ui_showmodels;
+cvar_t		*ui_show_window_stack;
 
 uiStatic_t	uiStatic;
 
@@ -436,83 +439,6 @@ const char *COM_ExtractExtension( const char *s )
 	return s;
 }
 
-/*
-=================
-UI_LoadBackgroundImage
-=================
-*/
-void UI_LoadBackgroundImage( void )
-{
-	char filename[512];
-	char *afile, *pfile;
-	char token[4096];
-
-	uiStatic.m_iSteamBackgroundCount = 0;
-
-	if( !EngFuncs::FileExists("resource/BackgroundLayout.txt", TRUE) )
-		goto fallback;
-
-	afile = (char*)EngFuncs::COM_LoadFile( "resource/BackgroundLayout.txt" );
-
-	pfile = afile;
-
-	pfile = EngFuncs::COM_ParseFile( pfile, token );
-	if( !pfile || strcmp( token, "resolution" )) // resolution at first!
-		goto fallback;
-
-	pfile = EngFuncs::COM_ParseFile( pfile, token );
-	if( !pfile ) goto fallback;
-
-	uiStatic.m_SteamBackgroundSize.w = atoi( token );
-
-	pfile = EngFuncs::COM_ParseFile( pfile, token );
-	if( !pfile ) goto fallback;
-
-	uiStatic.m_SteamBackgroundSize.h = atoi( token );
-
-	// Now read all tiled background list
-	while(( pfile = EngFuncs::COM_ParseFile( pfile, token )))
-	{
-		bimage_t img;
-
-		img.hImage = EngFuncs::PIC_Load( token, PIC_NOFLIP_TGA );
-
-		if( !img.hImage ) goto fallback;
-
-		// ignore "scaled" attribute. What does it mean?
-		pfile = EngFuncs::COM_ParseFile( pfile, token );
-		if( !pfile ) goto fallback;
-
-		pfile = EngFuncs::COM_ParseFile( pfile, token );
-		if( !pfile ) goto fallback;
-		img.coord.x = atoi( token );
-
-		pfile = EngFuncs::COM_ParseFile( pfile, token );
-		if( !pfile ) goto fallback;
-		img.coord.y = atoi( token );
-
-		img.size.w = EngFuncs::PIC_Width( img.hImage );
-		img.size.h = EngFuncs::PIC_Height( img.hImage );
-
-		uiStatic.m_SteamBackground[uiStatic.m_iSteamBackgroundCount] = img;
-		uiStatic.m_iSteamBackgroundCount++;
-	}
-
-	EngFuncs::COM_FreeFile( afile );
-	return;
-
-fallback:
-	EngFuncs::COM_FreeFile( afile );
-	uiStatic.m_iSteamBackgroundCount = 0;
-
-	if( EngFuncs::FileExists( "gfx/shell/splash.bmp", TRUE ))
-	{
-		// if we doesn't have logo.avi in gamedir we don't want to draw it
-		if( !EngFuncs::FileExists( "media/logo.avi", TRUE ))
-			uiStatic.m_fDisableLogo = TRUE;
-	}
-}
-
 // =====================================================================
 
 
@@ -656,8 +582,30 @@ void UI_UpdateMenu( float flTime )
 	}
 #endif
 
+
 	for( i = uiStatic.rootPosition ; i < uiStatic.menuDepth; i++ )
-		uiStatic.menuStack[i]->Draw();
+	{
+		CMenuBaseWindow *window = uiStatic.menuStack[i];
+
+		if( window->bInTransition )
+		{
+			if( window->DrawAnimation( CMenuBaseWindow::ANIM_IN ) )
+				window->bInTransition = false;
+		}
+
+		// transition is ended, so just draw
+		if( !window->bInTransition )
+		{
+			window->Draw();
+		}
+	}
+
+	if( uiStatic.prevMenu && uiStatic.prevMenu->bInTransition )
+		if( uiStatic.prevMenu->DrawAnimation( CMenuBaseWindow::ANIM_OUT ) )
+		{
+			uiStatic.prevMenu->bInTransition = false;
+		}
+
 
 	if( uiStatic.firstDraw )
 	{
@@ -673,8 +621,9 @@ void UI_UpdateMenu( float flTime )
 		}
 	}
 
+	// a1batross: moved to CMenuBaseWindow::DrawAnimation()
 	//CR
-	CMenuPicButton::DrawTitleAnim();
+	// CMenuPicButton::DrawTitleAnim();
 	//
 
 	// draw cursor
@@ -686,6 +635,44 @@ void UI_UpdateMenu( float flTime )
 	{
 		EngFuncs::PlayLocalSound( uiSoundIn );
 		uiStatic.enterSound = -1;
+	}
+
+	con_nprint_t con;
+	con.time_to_live = 0.1;
+
+	if( ui_show_window_stack && ui_show_window_stack->value )
+	{
+		for( int i = 0; i < uiStatic.menuDepth; i++ )
+		{
+			con.index++;
+			if( uiStatic.menuActive == uiStatic.menuStack[i] )
+			{
+				con.color[0] = 0.0f;
+				con.color[1] = 1.0f;
+				con.color[2] = 0.0f;
+			}
+			else
+			{
+				con.color[0] = con.color[1] = con.color[2] = 1.0f;
+			}
+
+
+			if( uiStatic.menuStack[i]->IsRoot() )
+			{
+				if( uiStatic.rootActive == uiStatic.menuStack[i] &&
+					uiStatic.rootActive != uiStatic.menuActive )
+				{
+					con.color[0] = 1.0f;
+					con.color[1] = 1.0f;
+					con.color[2] = 0.0f;
+				}
+				Con_NXPrintf( &con, "%p - %s\n", uiStatic.menuStack[i], uiStatic.menuStack[i]->szName );
+			}
+			else
+			{
+				Con_NXPrintf( &con, "     %p - %s\n", uiStatic.menuStack[i], uiStatic.menuStack[i]->szName );
+			}
+		}
 	}
 }
 
@@ -1215,7 +1202,7 @@ int UI_VidInit( void )
 	// register menu font
 	uiStatic.hFont = EngFuncs::PIC_Load( "#XASH_SYSTEMFONT_001.bmp", menufont_bmp, sizeof( menufont_bmp ));
 
-	UI_LoadBackgroundImage ();
+	CMenuBackgroundBitmap::LoadBackground( );
 #if 0
 	FILE *f;
 
@@ -1278,6 +1265,7 @@ void UI_Init( void )
 	// register our cvars and commands
 	ui_precache = EngFuncs::CvarRegister( "ui_precache", "0", FCVAR_ARCHIVE );
 	ui_showmodels = EngFuncs::CvarRegister( "ui_showmodels", "0", FCVAR_ARCHIVE );
+	ui_show_window_stack = EngFuncs::CvarRegister( "ui_show_window_stack", 0, FCVAR_ARCHIVE );
 
 	// show cl_predict dialog
 	EngFuncs::CvarRegister( "menu_mp_firsttime", "1", FCVAR_ARCHIVE );
@@ -1325,7 +1313,7 @@ void UI_Init( void )
 	UI_LoadScriptConfig();
 
 	//CR
-	CMenuPicButton::InitTitleAnim();
+	CMenuPicButton::ClearButtonStack();
 }
 
 /*

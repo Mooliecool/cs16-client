@@ -53,6 +53,8 @@ CMenuYesNoMessageBox::CMenuYesNoMessageBox( bool alert )
 
 	m_bSetYes = m_bSetNo = false;
 	m_bIsAlert = alert;
+
+	szName = "CMenuYesNoMessageBox";
 }
 
 /*
@@ -74,6 +76,9 @@ void CMenuYesNoMessageBox::_Init( void )
 	if( !(bool)onPositive )
 		onPositive = CEventCallback::NoopCb;
 
+	background.bForceColor = true;
+	background.iColor = uiPromptBgColor;
+	AddItem( background );
 	AddItem( dlgMessage1 );
 	AddItem( yes );
 
@@ -89,18 +94,19 @@ CMenuYesNoMessageBox::VidInit
 */
 void CMenuYesNoMessageBox::_VidInit( void )
 {
-	dlgMessage1.SetRect( DLG_X + 192, 280, 640, 256 );
-	if( m_bIsAlert )
-		yes.SetRect( DLG_X + 490, 460, UI_BUTTONS_WIDTH / 2, UI_BUTTONS_HEIGHT );
-	else
-		yes.SetRect( DLG_X + 380, 460, UI_BUTTONS_WIDTH / 2, UI_BUTTONS_HEIGHT );
-	no.SetRect( DLG_X + 530, 460, UI_BUTTONS_WIDTH / 2, UI_BUTTONS_HEIGHT );
 	SetRect( DLG_X + 192, 256, 640, 256 );
+	CalcPosition();
+	CalcSizes();
+
+	dlgMessage1.SetRect( 0, 24, 640, 256 );
+	if( m_bIsAlert )
+		yes.SetRect( 298, 204, UI_BUTTONS_WIDTH / 2, UI_BUTTONS_HEIGHT );
+	else
+		yes.SetRect( 188, 204, UI_BUTTONS_WIDTH / 2, UI_BUTTONS_HEIGHT );
+	no.SetRect( 338, 204, UI_BUTTONS_WIDTH / 2, UI_BUTTONS_HEIGHT );
 
 	dlgMessage1.SetCharSize( UI_MED_CHAR_WIDTH, UI_MED_CHAR_HEIGHT );
 
-	m_scPos = pos.Scale();
-	m_scSize = size.Scale();
 }
 
 /*
@@ -111,8 +117,7 @@ CMenuYesNoMessageBox::Draw
 void CMenuYesNoMessageBox::Draw( void )
 {
 	UI_FillRect( 0,0, gpGlobals->scrWidth, gpGlobals->scrHeight, 0x40000000 );
-	UI_FillRect( m_scPos, m_scSize, uiPromptBgColor );
-	CMenuItemsHolder::Draw();
+	CMenuBaseWindow::Draw();
 }
 
 /*
@@ -130,7 +135,10 @@ const char *CMenuYesNoMessageBox::Key(int key, int down)
 
 		return uiSoundNull;
 	}
-	else return CMenuItemsHolder::Key( key, down );
+	else
+	{
+		return CMenuBaseWindow::Key( key, down );
+	}
 }
 
 /*
@@ -148,12 +156,11 @@ void CMenuYesNoMessageBox::SetMessage( const char *msg )
 CMenuYesNoMessageBox::SetPositiveButton
 ==============
 */
-void CMenuYesNoMessageBox::SetPositiveButton( const char *msg, int buttonPic, void *extra )
+void CMenuYesNoMessageBox::SetPositiveButton( const char *msg, int buttonPic )
 {
 	m_bSetYes = true;
 	yes.szName = msg;
 	yes.SetPicture( buttonPic );
-	onPositive.pExtra = extra;
 }
 
 /*
@@ -161,12 +168,11 @@ void CMenuYesNoMessageBox::SetPositiveButton( const char *msg, int buttonPic, vo
 CMenuYesNoMessageBox::SetNegativeButton
 ==============
 */
-void CMenuYesNoMessageBox::SetNegativeButton( const char *msg, int buttonPic, void *extra )
+void CMenuYesNoMessageBox::SetNegativeButton( const char *msg, int buttonPic )
 {
 	m_bSetNo = true;
 	no.szName = msg;
 	no.SetPicture( buttonPic );
-	onNegative.pExtra = extra;
 }
 
 /*

@@ -55,15 +55,15 @@ static const char *axisNames[7] =
 
 class CMenuGamePad : public CMenuFramework
 {
+public:
+	CMenuGamePad() : CMenuFramework("CMenuGamePad") { }
+
 private:
+
 	virtual void _Init();
 	virtual void _VidInit();
 	void GetConfig();
 	void SaveAndPopMenu();
-
-
-	CMenuBackgroundBitmap background;
-	CMenuBannerBitmap banner;
 
 	CMenuPicButton	done;
 	CMenuSlider side, forward, pitch, yaw;
@@ -72,9 +72,10 @@ private:
 	CMenuSpinControl axisBind[6];
 
 	CMenuAction axisBind_label;
-};
 
-static CMenuGamePad 	uiGamePad;
+	CMenuPicButton controls;
+} uiGamePad;
+
 
 /*
 =================
@@ -231,8 +232,12 @@ void CMenuGamePad::_Init( void )
 	yaw.SetNameAndStatus( "Yaw", "Yaw rotating sensitivity" );
 	invYaw.SetNameAndStatus( "Invert", "Invert yaw axis" );
 
+	controls.SetPicture( PC_CONTROLS );
+	controls.onActivated = UI_Controls_Menu;
+
 	AddItem( background );
 	AddItem( banner );
+	AddItem( controls );
 	AddItem( done );
 	for( i = 0; i < 6; i++ )
 	{
@@ -252,8 +257,10 @@ void CMenuGamePad::_Init( void )
 void CMenuGamePad::_VidInit()
 {
 	done.SetCoord( 72, 630 );
+	controls.SetCoord( 72, 580 );
+
 	axisBind_label.SetRect( 52, 180, 200, 26 );
-	axisBind_label.SetCharSize( 17, 30 );
+	axisBind_label.SetCharSize( 11, 30 );
 
 	for( int i = 0, y = 230; i < 6; i++, y += 50 )
 	{

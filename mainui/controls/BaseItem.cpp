@@ -15,6 +15,8 @@ CMenuBaseItem::CMenuBaseItem()
 	SetCoord( 0, 0 );
 	SetSize( 0, 0 );
 
+	iFlags = 0;
+
 	iColor = uiPromptTextColor;
 	iFocusColor = uiPromptFocusColor;
 
@@ -23,9 +25,9 @@ CMenuBaseItem::CMenuBaseItem()
 	eLetterCase = QM_NOLETTERCASE;
 
 	m_iLastFocusTime = 0;
-	m_bPressed = 0;
+	m_bPressed = false;
 
-	m_pParent = 0;
+	m_pParent = NULL;
 }
 
 CMenuBaseItem::~CMenuBaseItem()
@@ -40,7 +42,8 @@ void CMenuBaseItem::Init()
 
 void CMenuBaseItem::VidInit()
 {
-	;
+	CalcPosition();
+	CalcSizes();
 }
 
 void CMenuBaseItem::Draw()
@@ -111,5 +114,21 @@ void CMenuBaseItem::_Event( int ev )
 
 bool CMenuBaseItem::IsCurrentSelected()
 {
-	return this == m_pParent->ItemAtCursor();
+	if( m_pParent )
+		return this == m_pParent->ItemAtCursor();
+	return false;
+}
+
+void CMenuBaseItem::CalcPosition()
+{
+	m_scPos = pos.Scale();
+
+	if( !IsAbsolutePositioned() && m_pParent )
+		m_scPos += m_pParent->m_scPos;
+}
+
+void CMenuBaseItem::CalcSizes()
+{
+	m_scSize = size.Scale();
+	m_scChSize = charSize.Scale();
 }

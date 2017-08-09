@@ -37,13 +37,12 @@ private:
 	void _VidInit();
 
 public:
+	CMenuVidOptions() : CMenuFramework( "CMenuVidOptions" ) { }
 	void SaveAndPopMenu();
 	void GetConfig();
 
 	int		outlineWidth;
 
-	CMenuBackgroundBitmap background;
-	CMenuBannerBitmap banner;
 	class CMenuVidPreview : public CMenuBitmap
 	{
 		virtual void Draw();

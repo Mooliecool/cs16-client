@@ -67,6 +67,7 @@ CMenuPlayerModelView::CMenuPlayerModelView() : CMenuBaseItem()
 	ent = NULL;
 	mouseYawControl = false;
 	prevCursorX = 0;
+	prevCursorY = 0;
 	hPlayerImage = 0;
 	eFocusAnimation = QM_HIGHLIGHTIFFOCUS;
 }
@@ -78,7 +79,7 @@ void CMenuPlayerModelView::Init()
 
 void CMenuPlayerModelView::VidInit()
 {
-	m_scPos = pos.Scale();
+	CalcPosition();
 	m_scSize = size.Scale();
 
 	ent = EngFuncs::GetPlayerModel();
@@ -266,6 +267,8 @@ private:
 	void _Init();
 	void _VidInit();
 public:
+	CMenuPlayerSetup() : CMenuFramework( "CMenuPlayerSetup" ) { }
+
 	void FindModels();
 	void SetConfig();
 	void SaveAndPopMenu();
@@ -274,9 +277,6 @@ public:
 	char	*modelsPtr[MAX_PLAYERMODELS];
 	int		num_models;
 	char	currentModel[CS_SIZE];
-
-	CMenuBackgroundBitmap background;
-	CMenuBannerBitmap banner;
 
 	CMenuPicButton	done;
 	CMenuPicButton	gameOptions;
@@ -493,6 +493,8 @@ void CMenuPlayerSetup::_VidInit()
 	clLW.SetCoord( 72, 430 );
 	showModels.SetCoord( 340, 380 );
 	hiModels.SetCoord( 340, 430 );
+
+	advOptions.SetGrayed( !UI_AdvUserOptions_IsAvailable() );
 }
 
 /*

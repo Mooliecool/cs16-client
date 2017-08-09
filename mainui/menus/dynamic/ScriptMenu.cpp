@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "SpinControl.h"
 #include "Field.h"
 #include "ItemsHolder.h"
+#include "Action.h"
 #include "dynamic/DynamicItemsHolder.h"
 
 #define ART_BANNER_SERVER "gfx/shell/head_advoptions"
@@ -73,19 +74,22 @@ public:
 
 	DECLARE_EVENT_TO_MENU_METHOD( CMenuScriptConfig, FlipMenu )
 
-	CMenuBackgroundBitmap background;
+
 	CMenuBannerBitmap banner;
+
+	scrvardef_t *m_pVars;
+
 private:
 	CMenuPicButton done;
 	CMenuPicButton cancel;
 	CMenuSpinControl pageSelector;
+	// CMenuAction unavailable;
 
 	void FreeItems( void );
 
 	virtual void _Init();
 
 	const char *m_szConfig;
-	scrvardef_t *m_pVars;
 	int m_iVarsCount;
 	int m_iPagesIndex;
 	int m_iPagesCount;
@@ -116,7 +120,7 @@ bool CMenuScriptConfigPage::IsItemFits(CMenuEditable &item)
 
 void CMenuScriptConfigPage::PrepareItem(CMenuEditable &item)
 {
-	item.SetCoord( pos.x, pos.y + m_iCurrentHeight );
+	item.SetCoord( 0, m_iCurrentHeight );
 	m_iCurrentHeight += item.size.h + m_iPadding;
 }
 
@@ -128,8 +132,8 @@ void CMenuScriptConfigPage::Save()
 	}
 }
 
-CMenuScriptConfig::CMenuScriptConfig() :
-	m_szConfig( NULL ), m_pVars( NULL ), m_iVarsCount( 0 )
+CMenuScriptConfig::CMenuScriptConfig() : CMenuFramework(),
+	m_szConfig(), m_pVars(), m_iVarsCount(), m_iPagesIndex(), m_iPagesCount(), m_iCurrentPage()
 {
 
 }
@@ -187,21 +191,22 @@ void CMenuScriptConfig::_Init( void )
 	cancel.SetCoord( 72, 280 );
 	cancel.onActivated = HideCb;
 
-	pageSelector.SetRect( 780, 180, 160, 32 );
-
 	AddItem( background );
 	AddItem( banner );
 	AddItem( done );
 	AddItem( cancel );
-	AddItem( pageSelector );
 
 	if( !m_pVars )
-		return; // Show "Unavailable" label?
+		return;
+
+	// RemoveItem( unavailable );
+	pageSelector.SetRect( 780, 180, 160, 32 );
+	AddItem( pageSelector );
 
 
 	CMenuScriptConfigPage *page = new CMenuScriptConfigPage;
 	page->SetRect( 340, 255, 660, 500 );
-	page->iFlags &= ~(QMF_GRAYED|QMF_INACTIVE);
+	page->iFlags &= ~(QMF_GRAYED|QMF_INACTIVE|QMF_MOUSEONLY);
 	page->Show();
 	m_iCurrentPage = 0;
 	m_iPagesCount = 1;
@@ -280,7 +285,7 @@ void CMenuScriptConfig::_Init( void )
 		editable->szStatusText = var->desc;
 		editable->SetCharSize( 12, 25 );
 		editable->LinkCvar( var->name, cvarType );
-		editable->iFlags &= ~(QMF_GRAYED|QMF_INACTIVE);
+		editable->iFlags &= ~(QMF_GRAYED|QMF_INACTIVE|QMF_MOUSEONLY);
 		editable->Show();
 
 		// create new page
@@ -352,12 +357,14 @@ static CMenuScriptConfig staticUserOptions;
 void UI_AdvServerOptions_Menu()
 {
 	staticServerOptions.banner.SetPicture( ART_BANNER_SERVER );
+	staticUserOptions.szName = "Server Options";
 	staticServerOptions.Show();
 }
 
 void UI_AdvUserOptions_Menu()
 {
 	staticUserOptions.banner.SetPicture( ART_BANNER_USER );
+	staticUserOptions.szName = "User Options";
 	staticUserOptions.Show();
 }
 
@@ -366,4 +373,14 @@ void UI_LoadScriptConfig()
 	// yes, create cvars if needed
 	staticServerOptions.SetScriptConfig( "settings.scr", true );
 	staticUserOptions.SetScriptConfig( "user.scr", true );
+}
+
+bool UI_AdvUserOptions_IsAvailable()
+{
+	return staticUserOptions.m_pVars != NULL;
+}
+
+bool UI_AdvServerOptions_IsAvailable()
+{
+	return staticServerOptions.m_pVars != NULL;
 }

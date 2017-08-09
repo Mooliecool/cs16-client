@@ -35,6 +35,8 @@ uiFileDialogGlobal_t	uiFileDialogGlobal;
 class CMenuFileDialog : public CMenuFramework
 {
 public:
+	CMenuFileDialog() : CMenuFramework("CMenuFileDialog") { }
+
 private:
 	virtual void _Init( void );
 	virtual void _VidInit( void );
@@ -43,9 +45,7 @@ private:
 	void GetFileList( void );
 	char		filePath[UI_MAXGAMES][95];
 	char		*filePathPtr[UI_MAXGAMES];
-	CMenuBackgroundBitmap background;
-	//CMenuBannerBitmap banner;
-
+	
 	CMenuPicButton	done;
 	CMenuPicButton	cancel;
 

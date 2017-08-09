@@ -36,6 +36,8 @@ static const char *uiCreditsDefault[] =
 class CMenuCredits : public CMenuFramework
 {
 public:
+	CMenuCredits() : CMenuFramework("CMenuCredits") { }
+
 	virtual void Draw();
 	virtual const char *Key(int key, int down);
 
@@ -46,7 +48,7 @@ public:
 private:
 	virtual void _Init();
 
-	CMenuBackgroundBitmap background;
+	
 
 	const char	**credits;
 	int		startTime;

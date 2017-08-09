@@ -39,8 +39,8 @@ void CMenuBitmap::VidInit( )
 	if( !szFocusPic )
 		szFocusPic = szPic;
 
-	m_scPos = pos.Scale();
-	m_scSize = size.Scale();
+	CalcPosition();
+	CalcSizes();
 }
 
 /*
@@ -102,6 +102,12 @@ CMenuBitmap::Draw
 */
 void CMenuBitmap::Draw( void )
 {
+	if( !szPic )
+	{
+		UI_FillRect( m_scPos, m_scSize, iColor );
+		return;
+	}
+
 	if( iFlags & QMF_GRAYED )
 	{
 		UI_DrawPic( m_scPos, m_scSize, uiColorDkGrey, szPic );
@@ -141,65 +147,6 @@ void CMenuBitmap::Draw( void )
 	}
 }
 
-/*
-=================
-CMenuBackgroundBitmap::Draw
-=================
-*/
-void CMenuBackgroundBitmap::Draw()
-{
-	if( EngFuncs::ClientInGame() )
-	{
-		if( EngFuncs::GetCvarFloat( "cl_background" ) )
-			return;
-
-		if( EngFuncs::GetCvarFloat( "ui_renderworld" ) )
-		{
-			UI_FillRect( 0, 0, ScreenWidth, ScreenHeight, uiColorBlack );
-			return;
-		}
-	}
-
-	float xScale, yScale;
-	int xpos, ypos;
-	int xoffset, yoffset;
-	float flParallaxScale;
-
-#if 1
-	flParallaxScale = 0.02;
-#else
-	// Disable parallax effect. It's just funny, but not really needed
-	flParallaxScale = 0.0f;
-#endif
-
-	xoffset = (uiStatic.cursorX - ScreenWidth) * flParallaxScale;
-	yoffset = (uiStatic.cursorY - ScreenHeight) * flParallaxScale;
-
-	// work out scaling factors
-	xScale = ScreenWidth / uiStatic.m_SteamBackgroundSize.w * (1 + flParallaxScale);
-	yScale = xScale;
-
-	if (!uiStatic.m_iSteamBackgroundCount || bForceBackground)
-	{
-		UI_DrawPic( xoffset * xScale, yoffset * yScale,
-			ScreenWidth * xScale, ScreenWidth * 3.0f / 4.0f * yScale, uiColorWhite, szPic );
-		return;
-	}
-
-
-	// iterate and draw all the background pieces
-	for (int i = 0; i < uiStatic.m_iSteamBackgroundCount; i++)
-	{
-		bimage_t &bimage = uiStatic.m_SteamBackground[i];
-		int dx = (int)ceil(bimage.coord.x * xScale);
-		int dy = (int)ceil(bimage.coord.y * yScale);
-		int dw = (int)ceil(bimage.size.w * xScale);
-		int dt = (int)ceil(bimage.size.h * yScale);
-
-		EngFuncs::PIC_Set( bimage.hImage, 255, 255, 255, 255 );
-		EngFuncs::PIC_Draw( xoffset + dx, yoffset + dy, dw, dt );
-	}
-}
 
 void CMenuBannerBitmap::Draw()
 {
@@ -222,9 +169,9 @@ void CMenuBannerBitmap::VidInit()
 	if( !szPic )
 		return;
 	// CMenuPicButton::SetTitleAnim( CMenuPicButton::AS_TO_TITLE );
-	CMenuPicButton::SetupTitleQuad( pos.x, pos.y, size.w, size.h );
+	CMenuPicButton::SetupTitleQuadForLast( pos.x, pos.y, size.w, size.h );
 #if defined(TA_ALT_MODE2) && !defined(TA_ALT_MODE)
-	HIMAGE hPic = EngFuncs::PIC_Load( szPic );
-	CMenuPicButton::SetTransPic( hPic );
+	CMenuPicButton::SetTransPicForLast( EngFuncs::PIC_Load( szPic ) );
 #endif
+
 }

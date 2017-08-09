@@ -4,6 +4,7 @@
 #include "PicButton.h"
 #include "ItemsHolder.h"
 #include "Scissor.h"
+#include <string.h>
 
 CMenuItemsHolder::CMenuItemsHolder() :
 	CMenuBaseItem(), m_iCursor( 0 ), m_iCursorPrev( 0 ), m_pItems( ), m_numItems( 0 ), m_bInit( false ), m_bAllowEnterActivate( false )
@@ -13,7 +14,7 @@ CMenuItemsHolder::CMenuItemsHolder() :
 
 const char *CMenuItemsHolder::Key( int key, int down )
 {
-	const char *sound = NULL;
+	const char *sound = uiSoundNull;
 
 	if( m_numItems )
 	{
@@ -32,7 +33,7 @@ const char *CMenuItemsHolder::Key( int key, int down )
 			{
 				sound = item->Key( key, down );
 
-				if( sound && sound != uiSoundNull ) return sound;
+				if( sound ) return sound;
 			}
 		}
 
@@ -96,13 +97,7 @@ const char *CMenuItemsHolder::Key( int key, int down )
 		}
 	}
 
-	if( down && key == K_ESCAPE )
-	{
-		Hide( );
-		return uiSoundOut;
-	}
-
-	return uiSoundNull;
+	return sound;
 }
 
 void CMenuItemsHolder::Char( int ch )
@@ -123,10 +118,10 @@ const char *CMenuItemsHolder::Activate()
 
 bool CMenuItemsHolder::MouseMove( int x, int y )
 {
+	int i;
 	// region test the active menu items
-
 	// go in reverse direction, so last items will be first
-	for( int i = m_numItems - 1; i >= 0; i-- )
+	for( i = m_numItems - 1; i >= 0; i-- )
 	{
 		CMenuBaseItem *item = m_pItems[i];
 
@@ -168,7 +163,7 @@ bool CMenuItemsHolder::MouseMove( int x, int y )
 	}
 
 	// out of any region
-	if( m_numItems )
+	if( !i )
 	{
 		m_pItems[m_iCursor]->iFlags &= ~QMF_HASMOUSEFOCUS;
 		m_pItems[m_iCursor]->m_bPressed = false;
@@ -194,10 +189,8 @@ void CMenuItemsHolder::Init()
 
 void CMenuItemsHolder::VidInit()
 {
-	m_scPos = pos.Scale();
-	m_scSize = size.Scale();
-	m_scChSize = charSize.Scale();
-
+	CalcPosition();
+	CalcSizes();
 	_VidInit();
 
 	for( CMenuBaseItem **i = m_pItems; i < m_pItems + m_numItems; i++ )
@@ -231,8 +224,6 @@ void CMenuItemsHolder::Draw( )
 	CMenuBaseItem *item;
 
 	const char *statusText;
-
-	UI::PushScissor( m_scPos, m_scSize );
 
 	// draw contents
 	for( int i = 0; i < m_numItems; i++ )
@@ -270,8 +261,6 @@ void CMenuItemsHolder::Draw( )
 		EngFuncs::DrawConsoleString( x, 720 * uiStatic.scaleY, statusText );
 	}
 	else statusFadeTime = uiStatic.realTime;
-
-	UI::PopScissor();
 }
 
 /*
@@ -291,7 +280,7 @@ wrap:
 	while( m_iCursor >= 0 && m_iCursor < m_numItems )
 	{
 		item = m_pItems[m_iCursor];
-		if( !item->IsVisible() || item->iFlags & (QMF_GRAYED|QMF_INACTIVE|QMF_MOUSEONLY) )
+		if( !item->IsVisible() || item->iFlags & (QMF_INACTIVE|QMF_MOUSEONLY) )
 		{
 			m_iCursor += dir;
 		}
@@ -352,15 +341,31 @@ CMenuBaseItem *CMenuItemsHolder::ItemAtCursorPrev()
 	return m_pItems[m_iCursorPrev];
 }
 
-void CMenuItemsHolder::SetCursorToItem( CMenuBaseItem *item, bool notify )
+void CMenuItemsHolder::SetCursorToItem(CMenuBaseItem &item, bool notify )
 {
 	for( int i = 0; i < m_numItems; i++ )
 	{
-		if( m_pItems[i] == item )
+		if( m_pItems[i] == &item )
 		{
 			SetCursor( i, notify );
 			return;
 		}
+	}
+}
+
+void CMenuItemsHolder::CalcItemsPositions()
+{
+	for( int i = 0; i < m_numItems; i++ )
+	{
+		m_pItems[i]->CalcPosition();
+	}
+}
+
+void CMenuItemsHolder::CalcItemsSizes()
+{
+	for( int i = 0; i < m_numItems; i++ )
+	{
+		m_pItems[i]->CalcSizes();
 	}
 }
 
@@ -369,7 +374,7 @@ void CMenuItemsHolder::SetCursor( int newCursor, bool notify )
 	if( newCursor < 0 || newCursor >= m_numItems )
 		return;
 
-	if( !m_pItems[newCursor]->IsVisible() || (m_pItems[newCursor]->iFlags & (QMF_GRAYED|QMF_INACTIVE)) )
+	if( !m_pItems[newCursor]->IsVisible() || (m_pItems[newCursor]->iFlags & (QMF_INACTIVE)) )
 		return;
 
 	m_iCursorPrev = m_iCursor;
@@ -413,4 +418,20 @@ void CMenuItemsHolder::AddItem(CMenuBaseItem &item)
 	m_numItems++;
 
 	item.Init();
+}
+
+void CMenuItemsHolder::RemoveItem(CMenuBaseItem &item)
+{
+	for( int i = m_numItems; i >= 0; i-- )
+	{
+		if( m_pItems[i] == &item )
+		{
+			item.m_pParent = NULL;
+
+			memmove( m_pItems + i, m_pItems + i + 1, ( m_numItems - i + 1 ) * sizeof( *m_pItems ) );
+
+			m_numItems--;
+			break;
+		}
+	}
 }

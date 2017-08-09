@@ -66,13 +66,12 @@ class CMenuVidModes : public CMenuFramework
 private:
 	void _Init();
 public:
+	CMenuVidModes() : CMenuFramework( "CMenuVidModes" ) { }
 	void GetConfig();
 	void SetConfig();
 
 	const char	*videoModesPtr[MAX_VIDMODES];
 
-	CMenuBackgroundBitmap background;
-	CMenuBannerBitmap banner;
 	CMenuPicButton	ok;
 	CMenuPicButton	cancel;
 	CMenuCheckBox	windowed;

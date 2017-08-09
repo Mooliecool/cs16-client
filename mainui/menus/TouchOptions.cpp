@@ -40,6 +40,8 @@ private:
 	void _VidInit();
 
 public:
+	CMenuTouchOptions() : CMenuFramework( "CMenuTouchOptions" ) { }
+
 	static void DeleteProfileCb( CMenuBaseItem *pSelf, void *pExtra );
 	static void ResetButtonsCb( CMenuBaseItem *pSelf, void *pExtra );
 
@@ -50,9 +52,7 @@ public:
 	char		profileDesc[UI_MAXGAMES][95];
 	char		*profileDescPtr[UI_MAXGAMES];
 	int			firstProfile;
-	CMenuBackgroundBitmap background;
-	CMenuBannerBitmap banner;
-
+	
 	CMenuPicButton	done;
 
 	CMenuSlider	lookX;

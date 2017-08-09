@@ -92,6 +92,25 @@ struct Point
 
 	int x, y;
 	Point Scale();
+	friend Point operator +( Point &a, Point &b ) { return Point( a.x + b.x, a.y + b.y ); }
+	friend Point operator -( Point &a, Point &b ) { return Point( a.x - b.x, a.y - b.y ); }
+
+	Point& operator+=( Point &a )
+	{
+		x += a.x;
+		y += a.y;
+		return *this;
+	}
+
+	Point& operator-=( Point &a )
+	{
+		x -= a.x;
+		y -= a.y;
+		return *this;
+	}
+
+	Point operator *( float scale ) { return Point( x * scale, y * scale );	}
+	Point operator /( float scale ) { return Point( x / scale, y / scale );	}
 };
 
 struct Size
@@ -115,20 +134,13 @@ struct Size
 
 extern cvar_t	*ui_precache;
 extern cvar_t	*ui_showmodels;
-
-#define MAX_BACKGROUNDS 48 // SC 5.0 have 35 tiled backgrounds!
-
-typedef struct
-{
-	HIMAGE	hImage;
-	Point coord;
-	Size size;
-} bimage_t;
+extern cvar_t   *ui_show_window_stack;
 
 typedef struct
 {
 	CMenuBaseWindow *rootActive; // current active fullscreen holder(menu framework)
 	CMenuBaseWindow *menuActive; // current active window
+	CMenuBaseWindow *prevMenu;   // previous active window
 	CMenuBaseWindow *menuStack[UI_MAX_MENUDEPTH];
 	int      menuDepth;
 	int      rootPosition;
@@ -145,14 +157,9 @@ typedef struct
 
 	HIMAGE	hFont;		// mainfont
 
-	// handle steam background images
-	bimage_t m_SteamBackground[MAX_BACKGROUNDS];
-	Size    m_SteamBackgroundSize;
-	int     m_iSteamBackgroundCount;
-
-	bool	m_fDisableLogo;
 	bool	m_fDemosPlayed;
 	int		m_iOldMenuDepth;
+	bool	m_fNoOldBackground;
 
 	float	scaleX;
 	float	scaleY;
@@ -338,7 +345,10 @@ void UI_FileDialog_Menu( void );
 void UI_TouchButtons_AddButtonToList( const char *name, const char *texture, const char *command, unsigned char *color, int flags );
 void UI_TouchButtons_GetButtonList();
 void UI_GamePad_Menu( void );
+
+bool UI_AdvUserOptions_IsAvailable( void );
 void UI_AdvUserOptions_Menu( void );
+bool UI_AdvServerOptions_IsAvailable( void );
 void UI_AdvServerOptions_Menu( void );
 
 //

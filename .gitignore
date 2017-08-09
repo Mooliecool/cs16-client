@@ -50,3 +50,34 @@ android/assets/extras.pak
 *.tasks
 regamebuild/
 *.tasks
+Makefile
+build/
+
+### CMake ###
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
+# makedepend
+Makefile.dep
+*.bak
+ALL_BUILD.*
+INSTALL.*
+ZERO_CHECK.*
+
+# Visual Studio
+*.obj
+*.dll
+*.exp
+*.lib
+*.suo
+*.sdf
+Debug/
+Release/
+ipch/
+*.opensdf
+# Use CMake for generating projects
+*.vcxproj.filters
+*.vcxproj
+*.sln

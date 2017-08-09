@@ -30,12 +30,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class CMenuSaveLoad : public CMenuFramework
 {
+public:
+	CMenuSaveLoad() : CMenuFramework( "CMenuSaveLoad" ) { }
 private:
 	void _Init();
 	void _VidInit();
-
-	CMenuBackgroundBitmap background;
-	CMenuBannerBitmap banner;
 
 	CMenuPicButton	save;
 	CMenuPicButton	load;

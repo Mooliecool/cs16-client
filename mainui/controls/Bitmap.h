@@ -18,7 +18,6 @@ GNU General Public License for more details.
 #ifndef MENU_BITMAP_H
 #define MENU_BITMAP_H
 
-#define ART_BACKGROUND		"gfx/shell/splash"
 
 class CMenuBitmap : public CMenuBaseItem
 {
@@ -39,7 +38,6 @@ public:
 	const char *szPic;
 	const char *szFocusPic;
 	const char *szPressPic;
-
 };
 
 // menu banners used fiexed rectangle (virtual screenspace at 640x480)
@@ -61,23 +59,7 @@ public:
 	void VidInit( void );
 	void SetInactive(bool) { }
 	void ToggleInactive() { }
-private:
-	bool m_bTransitionSet;
 };
 
-class CMenuBackgroundBitmap: public CMenuBitmap
-{
-public:
-	CMenuBackgroundBitmap() : CMenuBitmap()
-	{
-		szPic = ART_BACKGROUND;
-		iFlags = QMF_INACTIVE;
-		bForceBackground = false;
-	}
-	void Draw( void );
-	void SetInactive(bool) { }
-	void ToggleInactive() { }
-	bool bForceBackground; // if true, szPic will be drawn, instead of Steam-background
-};
 
 #endif // MENU_BITMAP_H

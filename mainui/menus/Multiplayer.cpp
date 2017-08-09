@@ -34,8 +34,7 @@ private:
 	virtual void _Init();
 	virtual void _VidInit();
 public:
-	CMenuBackgroundBitmap	background;
-	CMenuBannerBitmap		banner;
+	CMenuMultiplayer() : CMenuFramework( "CMenuMultiplayer" ) { }
 
 	CMenuPicButton	internetGames;
 	CMenuPicButton	spectateGames;
@@ -119,9 +118,6 @@ void CMenuMultiplayer::_Init( void )
 	AddItem( Customize );
 	AddItem( Controls );
 	AddItem( done );
-
-	if( EngFuncs::GetCvarFloat( "menu_mp_firsttime" ) && !EngFuncs::GetCvarFloat( "cl_predict" ) )
-		msgBox.Show();
 }
 
 void CMenuMultiplayer::_VidInit()
@@ -156,4 +152,7 @@ void UI_MultiPlayer_Menu( void )
 
 	UI_MultiPlayer_Precache();
 	uiMultiPlayer.Show();
+
+	if( EngFuncs::GetCvarFloat( "menu_mp_firsttime" ) && !EngFuncs::GetCvarFloat( "cl_predict" ) )
+		uiMultiPlayer.msgBox.Show();
 }

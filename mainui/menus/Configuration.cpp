@@ -35,9 +35,9 @@ private:
 	virtual void _Init( void );
 	virtual void _VidInit( void );
 
-	CMenuBackgroundBitmap	background;
-	CMenuBannerBitmap	banner;
 public:
+	CMenuOptions() : CMenuFramework("CMenuOptions") { }
+
 	CMenuPicButton	controls;
 	CMenuPicButton	audio;
 	CMenuPicButton	video;

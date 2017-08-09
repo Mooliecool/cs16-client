@@ -52,7 +52,7 @@ public:
 
 	virtual void VidInit()
 	{
-		m_scPos = pos.Scale();
+		CalcPosition();
 		m_scSize = size.Scale();
 	}
 
@@ -102,9 +102,6 @@ public:
 	char		delName[UI_MAXGAMES][CS_SIZE];
 	char		saveDescription[UI_MAXGAMES][95];
 	char		*saveDescriptionPtr[UI_MAXGAMES];
-
-	CMenuBackgroundBitmap background;
-	CMenuBannerBitmap banner;
 
 	CMenuPicButton	load;
 	CMenuPicButton  save;
@@ -238,7 +235,7 @@ void CMenuLoadGame::_Init( void )
 			char	cmd[128];
 
 			sprintf( cmd, "save/%s.bmp", saveName );
-			EngFuncs::PIC_Free( saveName );
+			EngFuncs::PIC_Free( cmd );
 
 			sprintf( cmd, "save \"%s\"\n", saveName );
 
@@ -339,12 +336,14 @@ void CMenuLoadGame::SetSaveMode(bool saveMode)
 		banner.SetPicture( ART_BANNER_SAVE );
 		save.SetVisibility( true );
 		load.SetVisibility( false );
+		szName = "CMenuSaveGame";
 	}
 	else
 	{
 		banner.SetPicture( ART_BANNER_LOAD );
 		save.SetVisibility( false );
 		load.SetVisibility( true );
+		szName = "CMenuLoadGame";
 	}
 	GetGameList();
 }
@@ -376,8 +375,8 @@ void UI_LoadGame_Menu( void )
 	if( !EngFuncs::CheckGameDll( )) return;
 
 	UI_LoadGame_Precache();
-	uiLoadGame.Show();
 	uiLoadGame.SetSaveMode(false);
+	uiLoadGame.Show();
 }
 
 void UI_SaveGame_Menu( void )
@@ -391,6 +390,6 @@ void UI_SaveGame_Menu( void )
 	if( !EngFuncs::CheckGameDll( )) return;
 
 	UI_LoadGame_Precache();
-	uiLoadGame.Show();
 	uiLoadGame.SetSaveMode(true);
+	uiLoadGame.Show();
 }

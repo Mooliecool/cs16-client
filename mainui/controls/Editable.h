@@ -25,7 +25,7 @@ class CMenuEditable : public CMenuBaseItem
 {
 public:
 	CMenuEditable() : CMenuBaseItem(),
-		m_szCvarName(), m_eType(), m_szString(), m_flValue()
+		m_szCvarName(), m_eType(), m_szString(), m_szOriginalString(), m_flValue(), m_flOriginalValue()
 	{
 	}
 
@@ -49,8 +49,11 @@ public:
 	}
 	void SetCvarString( const char *string )
 	{
-		strncpy( m_szString, string, CS_SIZE );
-		m_szString[CS_SIZE-1] = 0;
+		if( string != m_szString )
+		{
+			strncpy( m_szString, string, CS_SIZE );
+			m_szString[CS_SIZE-1] = 0;
+		}
 
 		if( onCvarChange ) onCvarChange( this );
 	}
@@ -71,7 +74,8 @@ public:
 			switch( m_eType )
 			{
 			case CVAR_STRING:
-				strncpy( m_szOriginalString, m_szString, CS_SIZE);
+				strncpy( m_szString, EngFuncs::GetCvarString( m_szCvarName ), CS_SIZE );
+				strncpy( m_szOriginalString, m_szString, CS_SIZE );
 				m_szOriginalString[CS_SIZE-1] = 0;
 
 				SetCvarString( m_szOriginalString );

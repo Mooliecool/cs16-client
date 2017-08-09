@@ -5,6 +5,14 @@
 #include "ItemsHolder.h"
 #include "BaseWindow.h"
 
+CMenuBaseWindow::CMenuBaseWindow(const char *name) : CMenuItemsHolder()
+{
+	bAllowDrag = false; // UNDONE
+	m_bHolding = false;
+	bInTransition = false;
+	szName = name;
+}
+
 void CMenuBaseWindow::Show()
 {
 	Init();
@@ -55,7 +63,14 @@ void CMenuBaseWindow::PushMenu()
 		uiStatic.menuStack[uiStatic.menuDepth++] = this;
 	}
 
+	if(( uiStatic.prevMenu = uiStatic.menuActive ))
+	{
+		uiStatic.prevMenu->bInTransition = true;
+	}
+
 	uiStatic.menuActive = this;
+	bInTransition = true; // enable transitions
+
 	uiStatic.firstDraw = true;
 	uiStatic.enterSound = gpGlobals->time + 0.15;	// make some delay
 	uiStatic.visible = true;
@@ -90,7 +105,11 @@ void CMenuBaseWindow::PopMenu()
 
 	if( uiStatic.menuDepth )
 	{
+		if(( uiStatic.prevMenu = uiStatic.menuActive ))
+			uiStatic.prevMenu->bInTransition = true;
+
 		uiStatic.menuActive = uiStatic.menuStack[uiStatic.menuDepth-1];
+
 		uiStatic.firstDraw = true;
 	}
 	else if ( CL_IsActive( ))
@@ -104,9 +123,6 @@ void CMenuBaseWindow::PopMenu()
 		UI_Main_Menu();
 	}
 
-	if( uiStatic.menuActive && uiStatic.menuActive->IsRoot() )
-		CMenuPicButton::PopPButtonStack();
-
 	if( uiStatic.m_fDemosPlayed && uiStatic.m_iOldMenuDepth == uiStatic.menuDepth )
 	{
 		EngFuncs::ClientCmd( FALSE, "demos\n" );
@@ -119,4 +135,43 @@ void CMenuBaseWindow::SaveAndPopMenu( )
 {
 	EngFuncs::ClientCmd( FALSE, "trysaveconfig\n" );
 	Hide();
+}
+
+const char *CMenuBaseWindow::Key(int key, int down)
+{
+	if( key == K_MOUSE1 && bAllowDrag )
+	{
+		m_bHolding = down;
+		m_bHoldOffset.x = uiStatic.cursorX / uiStatic.scaleX;
+		m_bHoldOffset.y = uiStatic.cursorY / uiStatic.scaleX;
+	}
+
+	if( down && key == K_ESCAPE )
+	{
+		Hide( );
+		return uiSoundOut;
+	}
+
+	return CMenuItemsHolder::Key( key, down );
+}
+
+void CMenuBaseWindow::Draw()
+{
+	if( m_bHolding && bAllowDrag )
+	{
+		pos.x += uiStatic.cursorX / uiStatic.scaleX - m_bHoldOffset.x;
+		pos.y += uiStatic.cursorY / uiStatic.scaleX- m_bHoldOffset.y;
+
+		m_bHoldOffset.x = uiStatic.cursorX / uiStatic.scaleX;
+		m_bHoldOffset.y = uiStatic.cursorY / uiStatic.scaleX;
+		CalcPosition();
+		CalcItemsPositions();
+	}
+	CMenuItemsHolder::Draw();
+}
+
+
+bool CMenuBaseWindow::DrawAnimation(EAnimation anim)
+{
+	return true;
 }

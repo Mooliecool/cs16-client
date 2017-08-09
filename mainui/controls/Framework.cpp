@@ -3,13 +3,14 @@
 #include "Utils.h"
 #include "PicButton.h"
 
-CMenuFramework::CMenuFramework() : CMenuBaseWindow()
+CMenuFramework::CMenuFramework( const char *name ) : CMenuBaseWindow( name )
 {
 	SetCoord( 0, 0 );
 }
 
 void CMenuFramework::Show()
 {
+	CMenuPicButton::RootChanged( true );
 	CMenuBaseWindow::Show();
 
 	uiStatic.rootActive = this;
@@ -27,9 +28,11 @@ void CMenuFramework::Hide()
 		{
 			uiStatic.rootActive = uiStatic.menuStack[i];
 			uiStatic.rootPosition = i;
+			CMenuPicButton::RootChanged( false );
 			return;
 		}
 	}
+
 
 	// looks like we are have a modal or some window over game
 	uiStatic.rootActive = NULL;
@@ -55,6 +58,13 @@ void CMenuFramework::VidInit()
 	m_scPos.x = m_scPos.y = 0;
 	m_scSize.w = ScreenWidth;
 	m_scSize.h = ScreenHeight;
+}
 
+bool CMenuFramework::DrawAnimation(EAnimation anim)
+{
+	if( anim == ANIM_IN )
+		Draw();
+
+	return CMenuPicButton::DrawTitleAnim( anim );
 }
 

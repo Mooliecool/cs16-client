@@ -37,12 +37,11 @@ private:
 	void GetConfig();
 	void SaveAndPopMenu();
 
-	CMenuBackgroundBitmap	background;
-	CMenuBannerBitmap	banner;
-
 	CMenuPicButton	done;
 
 public:
+	CMenuAudio() : CMenuFramework("CMenuAudio") { }
+
 	CMenuSlider	soundVolume;
 	CMenuSlider	musicVolume;
 	CMenuSlider	suitVolume;

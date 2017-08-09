@@ -7,7 +7,7 @@
 class CMenuFramework : public CMenuBaseWindow
 {
 public:
-	CMenuFramework();
+	CMenuFramework( const char *name = "Unnamed Framework" );
 
 	void Show();
 	void Init();
@@ -15,6 +15,10 @@ public:
 	void Hide();
 	bool IsVisible();
 	bool IsRoot() { return true; }
+
+	bool DrawAnimation(EAnimation anim);
+
+	CMenuBannerBitmap banner;
 };
 
 #endif // FRAMEWORK_H
