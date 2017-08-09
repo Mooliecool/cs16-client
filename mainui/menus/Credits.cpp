@@ -23,14 +23,62 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Utils.h"
 #include "Bitmap.h"
 
-#define UI_CREDITS_PATH		"credits.txt"
-#define UI_CREDITS_MAXLINES		2048
-
 static const char *uiCreditsDefault[] = 
 {
+	"CS16Client v1.4",
+	"Build Date:" __DATE__ " " __TIME__ ,
 	"",
-	"Copyright XashXT Group 2014 (C)",
-	0
+	"Developers: ",
+	"a1batross",
+	"mittorn",
+	"jeefo",
+	"",
+	"Touch & GFX: ",
+	"SergioPoverony",
+	"ahsim",
+	"",
+	"Beta-testers:",
+	"1.kirill",
+	"Romka_ZVO",
+	"WolfReiser",
+	"MakcuM56",
+	"Mr.Lightning Bolt",
+	"Kirpich",
+	"MeL0maN",
+	"LordAlfaruh",
+	"Velaron",
+	"KOBL1CK",
+	"Rediska_Morkovka",
+	"IcE",
+	"CSPlayer",
+	"Zu1iN~Mage",
+	"lewa_j",
+	"Cosmo",
+	"Maks56873",
+	"THE-Swank",
+	"Namatrasnik",
+	"picos",
+	"BloodyLuxor",
+	"AndroUser",
+	"Bbltashit",
+	"Athiend",
+	"vlad[54rus]",
+	"KinG",
+	"erokhin",
+	"Solexid",
+	"",
+	"Big thanks to Valve Corporation for Counter-Strike",
+	"Uncle Mike for this powerful engine",
+	"ONeiLL for inspiration",
+	"Nagist and s1lentq for successful CS1.6 game researching",
+	"Spirit of Half-Life developers for rain code",
+	"hzqst for studio render code",
+	"",
+	"Copyright Flying With Gauss 2015-2017 (C)",
+	"Flying With Gauss is not affiliated with Valve or any of their partners.",
+	"All copyrights reserved to their respective owners.",
+	"Thanks for playing!",
+	NULL
 };
 
 class CMenuCredits : public CMenuFramework
@@ -48,7 +96,7 @@ public:
 private:
 	virtual void _Init();
 
-	
+
 
 	const char	**credits;
 	int		startTime;
@@ -57,7 +105,6 @@ private:
 	int		numLines;
 	int		active;
 	int		finalCredits;
-	char		*index[UI_CREDITS_MAXLINES];
 	char		*buffer;
 };
 
@@ -81,7 +128,7 @@ void CMenuCredits::Draw( void )
 	if( !uiCredits.finalCredits && !EngFuncs::GetCvarFloat( "cl_background" ) )
 	{
 		background.Draw();
-		
+
 		// otherwise running on cutscene
 		speed = 32.0f * ( 768.0f / ScreenHeight );
 	}
@@ -144,56 +191,9 @@ CMenuCredits::_Init
 */
 void CMenuCredits::_Init( void )
 {
-	if( !uiCredits.buffer )
-	{
-		int	count;
-		char	*p;
-
-		// load credits if needed
-		uiCredits.buffer = (char *)EngFuncs::COM_LoadFile( UI_CREDITS_PATH, &count );
-		if( count )
-		{
-			if( uiCredits.buffer[count - 1] != '\n' && uiCredits.buffer[count - 1] != '\r' )
-			{
-				char *tmp = (char *)MALLOC( count + 2 );
-				memcpy( tmp, uiCredits.buffer, count ); 
-				EngFuncs::COM_FreeFile( uiCredits.buffer );
-				uiCredits.buffer = tmp; 
-				strncpy( uiCredits.buffer + count, "\r", 1 ); // add terminator
-				count += 2; // added "\r\0"
-			}
-			p = uiCredits.buffer;
-
-			// convert customs credits to 'ideal' strings array
-			for ( uiCredits.numLines = 0; uiCredits.numLines < UI_CREDITS_MAXLINES; uiCredits.numLines++ )
-			{
-				uiCredits.index[uiCredits.numLines] = p;
-				while ( *p != '\r' && *p != '\n' )
-				{
-					p++;
-					if ( --count == 0 )
-						break;
-				}
-
-				if ( *p == '\r' )
-				{
-					*p++ = 0;
-					if( --count == 0 ) break;
-				}
-
-				*p++ = 0;
-				if( --count == 0 ) break;
-			}
-			uiCredits.index[++uiCredits.numLines] = 0;
-			uiCredits.credits = (const char **)uiCredits.index;
-		}
-		else
-		{
-			// use built-in credits
-			uiCredits.credits =  uiCreditsDefault;
-			uiCredits.numLines = ( sizeof( uiCreditsDefault ) / sizeof( uiCreditsDefault[0] )) - 1; // skip term
-		}
-	}
+	// use built-in credits
+	uiCredits.credits =  uiCreditsDefault;
+	uiCredits.numLines = ( sizeof( uiCreditsDefault ) / sizeof( uiCreditsDefault[0] )) - 1; // skip term
 
 	// run credits
 	uiCredits.startTime = (gpGlobals->time * 1000) + 500; // make half-seconds delay
