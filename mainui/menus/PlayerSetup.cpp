@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "mathlib.h"
-#include "extdll.h"
+#include "extdll_menu.h"
 #include "const.h"
 #include "BaseMenu.h"
 #include "Utils.h"
@@ -37,229 +37,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "SpinControl.h"
 
 #define ART_BANNER		"gfx/shell/head_customize"
+#define ART_CROSSHAIR   "gfx/vgui/crosshair"
 
-#define MAX_PLAYERMODELS	100
-
-class CMenuPlayerModelView : public CMenuBaseItem
+class CMenuCrosshairView : public CMenuBitmap
 {
 public:
-	CMenuPlayerModelView();
-	virtual void Init();
-	virtual void VidInit();
-	virtual void Draw();
-	virtual const char *Key(int key, int down);
-
-	HIMAGE hPlayerImage;
-
-	void CalcFov();
-
-	ref_params_t refdef;
-	cl_entity_t *ent;
-
-	bool mouseYawControl;
-	int prevCursorX, prevCursorY;
+	void Draw();
 };
-
-CMenuPlayerModelView::CMenuPlayerModelView() : CMenuBaseItem()
-{
-	memset( &refdef, 0, sizeof( refdef ) );
-
-	ent = NULL;
-	mouseYawControl = false;
-	prevCursorX = 0;
-	prevCursorY = 0;
-	hPlayerImage = 0;
-	eFocusAnimation = QM_HIGHLIGHTIFFOCUS;
-}
-
-void CMenuPlayerModelView::Init()
-{
-
-}
-
-void CMenuPlayerModelView::VidInit()
-{
-	CalcPosition();
-	m_scSize = size.Scale();
-
-	ent = EngFuncs::GetPlayerModel();
-
-	if( !ent )
-		return;
-
-	EngFuncs::SetModel( ent, "models/player.mdl" );
-
-	// setup render and actor
-	refdef.fov_x = 40;
-
-	// NOTE: must be called after UI_AddItem whan we sure what UI_ScaleCoords is done
-	refdef.viewport[0] = m_scPos.x;
-	refdef.viewport[1] = m_scPos.y;
-	refdef.viewport[2] = m_scSize.w;
-	refdef.viewport[3] = m_scSize.h;
-
-	CalcFov();
-
-	// adjust entity params
-	ent->curstate.number = 1;	// IMPORTANT: always set playerindex to 1
-	ent->curstate.animtime = gpGlobals->time;	// start animation
-	ent->curstate.sequence = 1;
-	ent->curstate.scale = 1.0f;
-	ent->curstate.frame = 0.0f;
-	ent->curstate.framerate = 1.0f;
-	ent->curstate.effects |= EF_FULLBRIGHT;
-	ent->curstate.controller[0] = 127;
-	ent->curstate.controller[1] = 127;
-	ent->curstate.controller[2] = 127;
-	ent->curstate.controller[3] = 127;
-	ent->latched.prevcontroller[0] = 127;
-	ent->latched.prevcontroller[1] = 127;
-	ent->latched.prevcontroller[2] = 127;
-	ent->latched.prevcontroller[3] = 127;
-	ent->origin[0] = ent->curstate.origin[0] = 45.0f / tan( DEG2RAD( refdef.fov_y / 2.0f ));
-	ent->origin[2] = ent->curstate.origin[2] = 2.0f;
-	ent->angles[1] = ent->curstate.angles[1] = 180.0f;
-	
-	ent->player = true; // yes, draw me as playermodel
-}
-
-const char *CMenuPlayerModelView::Key(int key, int down)
-{
-	if( !ent )
-		return uiSoundNull;
-
-	if( key == K_MOUSE1 && UI_CursorInRect( m_scPos, m_scSize ) &&
-		down && !mouseYawControl )
-	{
-		mouseYawControl = true;
-		prevCursorX =  uiStatic.cursorX;
-		prevCursorY =  uiStatic.cursorY;
-		
-	}
-	else if( key == K_MOUSE1 && !down && mouseYawControl )
-	{
-		mouseYawControl = false;
-	}
-
-	float yaw = ent->angles[1];
-
-	switch( key )
-	{
-	case K_LEFTARROW:
-	case K_KP_RIGHTARROW:
-		if( down )
-		{
-			yaw -= 10.0f;
-
-			if( yaw > 180.0f ) yaw -= 360.0f;
-			else if( yaw < -180.0f ) yaw += 360.0f;
-
-			ent->angles[1] = ent->curstate.angles[1] = yaw;
-		}
-		break;
-	case K_RIGHTARROW:
-	case K_KP_LEFTARROW:
-		if( down )
-		{
-			yaw += 10.0f;
-
-			if( yaw > 180.0f ) yaw -= 360.0f;
-			else if( yaw < -180.0f ) yaw += 360.0f;
-
-			ent->angles[1] = ent->curstate.angles[1] = yaw;
-		}
-		break;
-	case K_ENTER:
-	case K_AUX1:
-	case K_MOUSE2:
-		if( down ) ent->curstate.sequence++;
-		break;
-	default:
-		return CMenuBaseItem::Key( key, down );
-	}
-
-	return uiSoundLaunch;
-}
-
-void CMenuPlayerModelView::Draw()
-{
-	// draw the background
-	UI_FillRect( m_scPos, m_scSize, uiPromptBgColor );
-
-	// draw the rectangle
-	if( eFocusAnimation == QM_HIGHLIGHTIFFOCUS && IsCurrentSelected() )
-		UI_DrawRectangle( m_scPos, m_scSize, uiInputTextColor );
-	else
-		UI_DrawRectangle( m_scPos, m_scSize, uiInputFgColor );
-
-	if( !ui_showmodels->value )
-	{
-		EngFuncs::PIC_Set( hPlayerImage, 255, 255, 255, 255 );
-		EngFuncs::PIC_Draw( m_scPos, m_scSize );
-	}
-	else
-	{
-		EngFuncs::ClearScene();
-
-		// update renderer timings
-		refdef.time = gpGlobals->time;
-		refdef.frametime = gpGlobals->frametime;
-		ent->curstate.body = 0;
-
-		if( mouseYawControl )
-		{
-			float diffX = uiStatic.cursorX - prevCursorX;
-			if( diffX )
-			{
-				float yaw = ent->angles[1];
-
-				yaw += diffX / uiStatic.scaleX;
-
-				if( yaw > 180.0f )
-					yaw -= 360.0f;
-				else if( yaw < -180.0f )
-					yaw += 360.0f;
-				ent->angles[1] = ent->curstate.angles[1] = yaw;
-			}
-
-			prevCursorX = uiStatic.cursorX;
-			float diffY = uiStatic.cursorY - prevCursorY;
-			if( diffY )
-			{
-				float pitch = refdef.viewangles[2];
-
-				pitch += diffY / uiStatic.scaleY;
-
-				if( pitch > 180.0f )
-					pitch -= 360.0f;
-				else if( pitch < -180.0f )
-					pitch += 360.0f;
-				refdef.viewangles[2] = pitch;
-				ent->angles[2] = ent->curstate.angles[2] = -pitch;
-			}
-
-			prevCursorY = uiStatic.cursorY;
-		}
-
-		// draw the player model
-		EngFuncs::CL_CreateVisibleEntity( ET_NORMAL, ent );
-		EngFuncs::RenderScene( &refdef );
-	}
-}
-
-/*
-=================
-UI_PlayerSetup_CalcFov
-
-assume refdef is valid
-=================
-*/
-void CMenuPlayerModelView::CalcFov( )
-{
-	float x = refdef.viewport[2] / tan( DEG2RAD( refdef.fov_x ) * 0.5f );
-	float half_fov_y = atan( refdef.viewport[3] / x );
-	refdef.fov_y = RAD2DEG( half_fov_y ) * 2;
-}
 
 class CMenuPlayerSetup : public CMenuFramework
 {
@@ -269,73 +53,129 @@ private:
 public:
 	CMenuPlayerSetup() : CMenuFramework( "CMenuPlayerSetup" ) { }
 
-	void FindModels();
+	void GetConfig();
 	void SetConfig();
 	void SaveAndPopMenu();
-
-	char	models[MAX_PLAYERMODELS][CS_SIZE];
-	char	*modelsPtr[MAX_PLAYERMODELS];
-	int		num_models;
-	char	currentModel[CS_SIZE];
 
 	CMenuPicButton	done;
 	CMenuPicButton	gameOptions;
 	CMenuPicButton	advOptions;
-	CMenuPlayerModelView	view;
 
-	CMenuCheckBox	showModels;
 	CMenuCheckBox	hiModels;
-	CMenuCheckBox	clPredict;
-	CMenuCheckBox	clLW;
-	CMenuSlider	topColor;
-	CMenuSlider	bottomColor;
 
 	CMenuField	name;
-	CMenuSpinControl	model;
+
+	CMenuCrosshairView	  crosshairView;
+	CMenuSlider	crosshairRed;
+	CMenuSlider	crosshairGreen;
+	CMenuSlider	crosshairBlue;
+	CMenuSpinControl crosshairSize;
+	CMenuSpinControl crosshairColor;
+
+	CMenuCheckBox    crosshairTranslucent;
+
+	HIMAGE uiWhite;
 
 } uiPlayerSetup;
 
-/*
-=================
-UI_PlayerSetup_FindModels
-=================
-*/
-void CMenuPlayerSetup::FindModels( void )
+static const char *g_szCrosshairAvailSizes[4] = { "auto", "small", "medium", "large" };
+
+void CMenuCrosshairView::Draw()
 {
-	char	name[256], path[256];
-	char	**filenames;
-	int numFiles, i;
-	
-	num_models = 0;
+	HIMAGE uiWhite;
 
-	// Get file list
-	filenames = EngFuncs::GetFilesList(  "models/player/*", &numFiles, TRUE );
-	if( !numFiles )
-		filenames = EngFuncs::GetFilesList(  "models/player/*", &numFiles, FALSE );
-	// a1batross: do we need this at all?
-#if 1
-	// add default singleplayer model
-	strcpy( models[num_models], "player" );
-	modelsPtr[num_models] = models[num_models];
-	num_models++;
-#endif
-	// build the model list
-	for( i = 0; i < numFiles; i++ )
+	CMenuBitmap::Draw();
+
+	uiWhite = EngFuncs::PIC_Load( "*white" );
+
+	int l;
+	int val = uiPlayerSetup.crosshairSize.GetCurrentValue();
+	switch( val )
 	{
-		COM_FileBase( filenames[i], name );
-		snprintf( path, sizeof(path), "models/player/%s/%s.mdl", name, name );
-		if( !EngFuncs::FileExists( path, TRUE ))
-			continue;
-
-		strcpy( models[num_models], name );
-		modelsPtr[num_models] = models[num_models];
-		num_models++;
+	case 1:
+		l = 10;
+		break;
+	case 2:
+		l = 20;
+		break;
+	case 3:
+		l = 30;
+		break;
+	case 0:
+		if( ScreenWidth < 640 )
+			l = 30;
+		else if( ScreenWidth < 1024 )
+			l = 20;
+		else l = 10;
 	}
 
-	for( i = num_models; i < MAX_PLAYERMODELS; i++ )
-		modelsPtr[i] = NULL;
+	l *= ScreenHeight / 768.0f;
+
+	int x = m_scPos.x, // xpos
+		y = m_scPos.y, // ypos
+		w = m_scSize.w, // width
+		h = m_scSize.h, // height
+		// delta distance
+		d = (m_scSize.w / 2 - l) * 0.5,
+		// alpha
+		a = 180,
+		// red
+		r = uiPlayerSetup.crosshairRed.GetCurrentValue(),
+		// green
+		g = uiPlayerSetup.crosshairGreen.GetCurrentValue(),
+		// blue
+		b = uiPlayerSetup.crosshairBlue.GetCurrentValue();
+
+	if( uiPlayerSetup.crosshairTranslucent.bChecked )
+	{
+		// verical
+		EngFuncs::PIC_Set(uiWhite, r, g, b, a);
+		EngFuncs::PIC_DrawTrans(x + w / 2, y + d,         1, l );
+
+		EngFuncs::PIC_Set(uiWhite, r, g, b, a);
+		EngFuncs::PIC_DrawTrans(x + w / 2, y + h / 2 + d, 1, l );
+
+		// horizontal
+		EngFuncs::PIC_Set(uiWhite, r, g, b, a);
+		EngFuncs::PIC_DrawTrans(x + d,         y + h / 2, l, 1 );
+
+		EngFuncs::PIC_Set(uiWhite, r, g, b, a);
+		EngFuncs::PIC_DrawTrans(x + w / 2 + d, y + h / 2, l, 1 );
+	}
+	else
+	{
+		// verical
+		EngFuncs::PIC_Set(uiWhite, r, g, b, a);
+		EngFuncs::PIC_DrawAdditive(x + w / 2, y + d,         1, l );
+
+		EngFuncs::PIC_Set(uiWhite, r, g, b, a);
+		EngFuncs::PIC_DrawAdditive(x + w / 2, y + h / 2 + d, 1, l );
+
+		// horizontal
+		EngFuncs::PIC_Set(uiWhite, r, g, b, a);
+		EngFuncs::PIC_DrawAdditive(x + d,         y + h / 2, l, 1 );
+
+		EngFuncs::PIC_Set(uiWhite, r, g, b, a);
+		EngFuncs::PIC_DrawAdditive(x + w / 2 + d, y + h / 2, l, 1 );
+	}
+
 }
 
+void CMenuPlayerSetup::GetConfig( void )
+{
+	const char *colors = EngFuncs::GetCvarString( "cl_crosshair_color" );
+	if( colors )
+	{
+		int r, g, b;
+		sscanf( colors, "%d %d %d", &r, &g, &b );
+
+		crosshairRed.SetCurrentValue( r );
+		crosshairGreen.SetCurrentValue( g );
+		crosshairBlue.SetCurrentValue( b );
+	}
+
+	crosshairTranslucent.UpdateEditable();
+}
 
 /*
 =================
@@ -345,13 +185,17 @@ UI_PlayerSetup_SetConfig
 void CMenuPlayerSetup::SetConfig( void )
 {
 	name.WriteCvar();
-	model.WriteCvar();
-	topColor.WriteCvar();
-	bottomColor.WriteCvar();
 	hiModels.WriteCvar();
-	showModels.WriteCvar();
-	clPredict.WriteCvar();
-	clLW.WriteCvar();
+
+	char color[CS_SIZE];
+	int r = uiPlayerSetup.crosshairRed.GetCurrentValue(), // red
+		// green
+		g = uiPlayerSetup.crosshairGreen.GetCurrentValue(),
+		// blue
+		b = uiPlayerSetup.crosshairBlue.GetCurrentValue();
+	snprintf( color, CS_SIZE, "%d %d %d", r, g, b );
+
+	EngFuncs::CvarSetString( "cl_crosshair_color", color );
 }
 
 void CMenuPlayerSetup::SaveAndPopMenu( void )
@@ -367,15 +211,10 @@ UI_PlayerSetup_Init
 */
 void CMenuPlayerSetup::_Init( void )
 {
-	bool game_hlRally = false;
-	int addFlags = 0;
-
-	// disable playermodel preview for HLRally to prevent crash
-	if( !stricmp( gMenu.m_gameinfo.gamefolder, "hlrally" ))
-		game_hlRally = true;
-
-	if( gMenu.m_gameinfo.flags & GFL_NOMODELS )
-		addFlags |= QMF_INACTIVE;
+	g_szCrosshairAvailSizes[0] = "auto";
+	g_szCrosshairAvailSizes[1] = "small";
+	g_szCrosshairAvailSizes[2] = "medium";
+	g_szCrosshairAvailSizes[3] = "large";
 
 	banner.SetPicture(ART_BANNER);
 
@@ -400,58 +239,58 @@ void CMenuPlayerSetup::_Init( void )
 	name.iMaxLength = 32;
 	name.LinkCvar( "name" );
 
-	FindModels();
-	model.Setup( (const char **)modelsPtr, (size_t)num_models );
-	model.LinkCvar( "model", CMenuEditable::CVAR_STRING );
-	SET_EVENT( model, onChanged )
-	{
-		CMenuPlayerSetup *parent = (CMenuPlayerSetup*)pSelf->Parent();
-		CMenuSpinControl *self = (CMenuSpinControl*)pSelf;
-		char image[256];
-		const char *model = self->GetCurrentString();
-
-		snprintf( image, 256, "models/player/%s/%s.bmp", model, model );
-		parent->view.hPlayerImage = EngFuncs::PIC_Load( image );
-		EngFuncs::CvarSetString("model", model );
-		if( !strcmp( model, "player" ) )
-			strcpy( image, "models/player.mdl" );
-		else
-			snprintf( image, sizeof(image), "models/player/%s/%s.mdl", model, model );
-		if( parent->view.ent )
-			EngFuncs::SetModel( parent->view.ent, image );
-	}
-	END_EVENT( model, onChanged )
-
-	topColor.iFlags |= addFlags;
-	topColor.SetNameAndStatus( "Top color", "Set a player model top color" );
-	topColor.Setup( 0.0, 255, 1 );
-	topColor.LinkCvar( "topcolor" );
-	topColor.onCvarChange = CMenuEditable::WriteCvarCb;
-
-	bottomColor.iFlags |= addFlags;
-	bottomColor.SetNameAndStatus( "Bottom color", "Set a player model bottom color" );
-	bottomColor.Setup( 0.0, 255.0, 1 );
-	bottomColor.LinkCvar( "bottomcolor" );
-	bottomColor.onCvarChange = CMenuEditable::WriteCvarCb;
-
-	clPredict.SetNameAndStatus( "Predict movement", "Enable player movement prediction" );
-	clPredict.LinkCvar( "cl_predict" );
-
-	clLW.SetNameAndStatus( "Local weapons", "Enable local weapons" );
-	clLW.LinkCvar( "cl_lw" );
-
-	showModels.iFlags |= addFlags;
-	showModels.SetNameAndStatus( "Show 3D preview", "Show 3D player models instead of preview thumbnails" );
-	showModels.LinkCvar( "ui_showmodels" );
-	showModels.onCvarChange = CMenuEditable::WriteCvarCb;
-
-	hiModels.iFlags |= addFlags;
 	hiModels.SetNameAndStatus( "High quality models", "Show HD models in multiplayer" );
 	hiModels.LinkCvar( "cl_himodels" );
 	hiModels.onCvarChange = CMenuEditable::WriteCvarCb;
 
-	view.iFlags |= addFlags;
-	//view.
+	crosshairView.SetPicture( ART_CROSSHAIR );
+	crosshairView.SetRect( 320, 310, 96, 96 );
+	crosshairView.iFlags = QMF_INACTIVE;
+
+	crosshairSize.SetRect( 450, 315, 256, 26 );
+	crosshairSize.Setup( g_szCrosshairAvailSizes, 4 );
+	crosshairSize.eTextAlignment = QM_CENTER;
+	crosshairSize.eFocusAnimation = QM_HIGHLIGHTIFFOCUS;
+	crosshairSize.iFlags = QMF_DROPSHADOW;
+	crosshairSize.szStatusText = "Set crosshair size";
+	crosshairSize.onChanged = CMenuEditable::WriteCvarCb;
+	crosshairSize.LinkCvar( "cl_crosshair_size", CMenuEditable::CVAR_STRING );
+
+	crosshairColor.SetRect( 450, 360, 256, 26 );
+	crosshairColor.Setup( 0.0f, 9.0f, 1.0f );
+	crosshairColor.eTextAlignment = QM_CENTER;
+	crosshairColor.eFocusAnimation = QM_HIGHLIGHTIFFOCUS;
+	crosshairColor.iFlags = QMF_DROPSHADOW;
+	crosshairColor.szStatusText = "Set crosshair color";
+	SET_EVENT( crosshairColor, onChanged )
+	{
+		char cmd[CS_SIZE];
+		snprintf( cmd, CS_SIZE, "adjust_crosshair %d\n", (int)((CMenuSpinControl*)pSelf)->GetCurrentValue() );
+		EngFuncs::ClientCmd( TRUE, cmd );
+		uiPlayerSetup.GetConfig();
+	}
+	END_EVENT( crosshairColor, onChanged )
+
+	crosshairRed.eFocusAnimation = QM_PULSEIFFOCUS;
+	crosshairRed.SetNameAndStatus( "Red:", "Texture red channel" );
+	crosshairRed.Setup( 0, 255, 1 );
+	crosshairRed.SetCoord( 320, 450 );
+
+	crosshairGreen.eFocusAnimation = QM_PULSEIFFOCUS;
+	crosshairGreen.SetNameAndStatus( "Green:", "Texture green channel" );
+	crosshairGreen.Setup( 0, 255, 1 );
+	crosshairGreen.SetCoord( 320, 500 );
+
+	crosshairBlue.eFocusAnimation = QM_PULSEIFFOCUS;
+	crosshairBlue.SetNameAndStatus( "Blue:", "Texture blue channel" );
+	crosshairBlue.Setup( 0, 255, 1 );
+	crosshairBlue.SetCoord( 320, 550 );
+
+	crosshairTranslucent.SetNameAndStatus( "Translucent crosshair", "Set additive render crosshair" );
+	crosshairTranslucent.SetCoord( 450, 400 );
+	crosshairTranslucent.LinkCvar( "cl_crosshair_translucent" );
+	crosshairTranslucent.iFlags = QMF_ACT_ONRELEASE | QMF_DROPSHADOW;
+	crosshairTranslucent.onChanged = CMenuEditable::WriteCvarCb;
 
 	AddItem( background );
 	AddItem( banner );
@@ -459,19 +298,13 @@ void CMenuPlayerSetup::_Init( void )
 	AddItem( gameOptions );
 	AddItem( advOptions );
 	AddItem( name );
-	AddItem( clPredict);
-	AddItem( clLW);
-	if( !(gMenu.m_gameinfo.flags & GFL_NOMODELS) )
-	{
-		AddItem( topColor );
-		AddItem( bottomColor );
-		AddItem( showModels );
-		AddItem( hiModels );
-		AddItem( model );
-		// disable playermodel preview for HLRally to prevent crash
-		if( game_hlRally == FALSE )
-			AddItem( view );
-	}
+	AddItem( crosshairView );
+	AddItem( crosshairSize );
+	AddItem( crosshairColor );
+	AddItem( crosshairRed );
+	AddItem( crosshairGreen );
+	AddItem( crosshairBlue );
+	AddItem( crosshairTranslucent );
 }
 
 void CMenuPlayerSetup::_VidInit()
@@ -479,19 +312,7 @@ void CMenuPlayerSetup::_VidInit()
 	done.SetCoord( 72, 230 );
 	gameOptions.SetCoord( 72, 280 );
 	advOptions.SetCoord( 72, 330 );
-
-	view.SetRect( 660, 260, 260, 320 );
 	name.SetRect( 320, 260, 256, 36 );
-	model.SetRect( 702, 590, 176, 32 );
-	topColor.SetCoord( 250, 550 );
-	topColor.size.w = 300;
-
-	bottomColor.SetCoord( 250, 620 );
-	bottomColor.size.w = 300;
-
-	clPredict.SetCoord( 72, 380 );
-	clLW.SetCoord( 72, 430 );
-	showModels.SetCoord( 340, 380 );
 	hiModels.SetCoord( 340, 430 );
 
 	advOptions.SetGrayed( !UI_AdvUserOptions_IsAvailable() );

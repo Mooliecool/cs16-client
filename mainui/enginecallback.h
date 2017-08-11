@@ -275,9 +275,15 @@ public:
 
 
 // built-in memory manager
-#define MALLOC( x )		EngFuncs::MemAlloc( x, __FILE__, __LINE__ )
+#ifndef CLIENT_DLL
+#define MALLOC( x )		EngFuncs::MemAlloc( (x), __FILE__, __LINE__ )
 #define CALLOC( x, y )	EngFuncs::MemAlloc((x) * (y), __FILE__, __LINE__ )
-#define FREE( x )		EngFuncs::MemFree( x, __FILE__, __LINE__ )
+#define FREE( x )		EngFuncs::MemFree( (x), __FILE__, __LINE__ )
+#else
+#define MALLOC( x ) malloc( (x) )
+#define CALLOC( x, y ) calloc( (x), (y) )
+#define FREE( x ) free( (x) )
+#endif
 
 #define CL_IsActive()	(EngFuncs::ClientInGame() && !EngFuncs::GetCvarFloat( "cl_background" ))
 #define Host_Error (*EngFuncs::engfuncs.pfnHostError)

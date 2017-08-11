@@ -26,6 +26,7 @@ project (CS16CLIENT)
 #--------------
 # USER DEFINES \
 ################\
+
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_MAINUI "Build mainui dll" ON)
 option(ALLOW64BUILD "Allow amd64 build" OFF)
@@ -34,7 +35,6 @@ option(ALLOW64BUILD "Allow amd64 build" OFF)
 # MAIN BUILD CODE \
 ###################\
 
-add_compile_options(-Wl,--no-undefined)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 # Build 32-bit Xash on 64-bit, because Xash3D not support this

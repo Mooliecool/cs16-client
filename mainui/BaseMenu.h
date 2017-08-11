@@ -122,7 +122,7 @@ struct Size
 	Size Scale();
 };
 
-#include "extdll.h"
+#include "extdll_menu.h"
 #include "enginecallback.h"
 #include "EventSystem.h"
 #include "Framework.h"
@@ -176,6 +176,8 @@ typedef struct
 	int		framecount;	// how many frames menu visible
 	int		initialized;
 
+	bool	precached;
+
 	// btns_main.bmp stuff
 	HIMAGE	buttonsPics[71];	// Fpos.xME: replace with PC_BUTTONCOUNT
 
@@ -217,6 +219,8 @@ extern int	uiColorDkGrey;
 extern int	uiColorBlack;
 
 // TODO: Move it under namespace?
+
+void UI_Precache( void );
 
 void UI_ScaleCoords( int *x, int *y, int *w, int *h );
 void UI_ScaleCoords( int &x, int &y, int &w, int &h );
@@ -287,26 +291,17 @@ void UI_LoadScriptConfig( void );
 
 // Precache
 void UI_Main_Precache( void );
-void UI_NewGame_Precache( void );
-void UI_LoadGame_Precache( void );
-void UI_SaveGame_Precache( void );
-void UI_SaveLoad_Precache( void );
 void UI_MultiPlayer_Precache( void );
 void UI_Options_Precache( void );
 void UI_InternetGames_Precache( void );
 void UI_LanGame_Precache( void );
 void UI_PlayerSetup_Precache( void );
 void UI_Controls_Precache( void );
-void UI_AdvControls_Precache( void );
 void UI_GameOptions_Precache( void );
 void UI_CreateGame_Precache( void );
 void UI_Audio_Precache( void );
 void UI_Video_Precache( void );
-void UI_VidOptions_Precache( void );
-void UI_VidModes_Precache( void );
-void UI_CustomGame_Precache( void );
 void UI_Credits_Precache( void );
-void UI_GoToSite_Precache( void );
 void UI_Touch_Precache( void );
 void UI_TouchOptions_Precache( void );
 void UI_TouchButtons_Precache( void );
@@ -317,10 +312,6 @@ void UI_DynamicMenu_Precache( void );
 
 // Menus
 void UI_Main_Menu( void );
-void UI_NewGame_Menu( void );
-void UI_LoadGame_Menu( void );
-void UI_SaveGame_Menu( void );
-void UI_SaveLoad_Menu( void );
 void UI_MultiPlayer_Menu( void );
 void UI_Options_Menu( void );
 void UI_InternetGames_Menu( void );
@@ -328,14 +319,10 @@ void UI_LanGame_Menu( void );
 void UI_ServerBrowser_Menu( void );
 void UI_PlayerSetup_Menu( void );
 void UI_Controls_Menu( void );
-void UI_AdvControls_Menu( void );
 void UI_GameOptions_Menu( void );
 void UI_CreateGame_Menu( void );
 void UI_Audio_Menu( void );
 void UI_Video_Menu( void );
-void UI_VidOptions_Menu( void );
-void UI_VidModes_Menu( void );
-void UI_CustomGame_Menu( void );
 void UI_Credits_Menu( void );
 void UI_Touch_Menu( void );
 void UI_TouchOptions_Menu( void );

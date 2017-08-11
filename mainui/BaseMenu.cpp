@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 
-#include "extdll.h"
+#include "extdll_menu.h"
 #include "BaseMenu.h"
 #include "PicButton.h"
 #include "keydefs.h"
@@ -36,7 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "BackgroundBitmap.h"
 #include "con_nprint.h"
 
-cvar_t		*ui_precache;
 cvar_t		*ui_showmodels;
 cvar_t		*ui_show_window_stack;
 
@@ -552,6 +551,9 @@ void UI_UpdateMenu( float flTime )
 
 	UI_DrawFinalCredits ();
 
+	if( !uiStatic.precached )
+		UI_Precache ();
+
 	if( !uiStatic.visible )
 		return;
 
@@ -990,9 +992,6 @@ void UI_Precache( void )
 	if( !uiStatic.initialized )
 		return;
 
-	if( !ui_precache->value )
-		return;
-
 	EngFuncs::PIC_Load( UI_LEFTARROW );
 	EngFuncs::PIC_Load( UI_LEFTARROWFOCUS );
 	EngFuncs::PIC_Load( UI_RIGHTARROW );
@@ -1003,26 +1002,16 @@ void UI_Precache( void )
 	EngFuncs::PIC_Load( UI_DOWNARROWFOCUS );
 	EngFuncs::PIC_Load( "gfx/shell/splash" );
 
-	if( ui_precache->value == 1 )
-		return;
-
 	UI_Main_Precache();
-	UI_NewGame_Precache();
-	UI_LoadGame_Precache();
-	UI_SaveLoad_Precache();
 	UI_MultiPlayer_Precache();
 	UI_Options_Precache();
 	UI_InternetGames_Precache();
 	UI_PlayerSetup_Precache();
 	UI_Controls_Precache();
-	UI_AdvControls_Precache();
 	UI_GameOptions_Precache();
 	UI_CreateGame_Precache();
 	UI_Audio_Precache();
 	UI_Video_Precache();
-	UI_VidOptions_Precache();
-	UI_VidModes_Precache();
-	UI_CustomGame_Precache();
 	UI_Credits_Precache();
 	UI_Touch_Precache();
 	UI_TouchOptions_Precache();
@@ -1030,6 +1019,11 @@ void UI_Precache( void )
 	UI_TouchEdit_Precache();
 	UI_FileDialog_Precache();
 	UI_GamePad_Precache();
+
+	// load SCR here
+	UI_LoadScriptConfig();
+
+	uiStatic.precached = true;
 }
 
 void UI_ParseColor( char *&pfile, int *outColor )
@@ -1177,7 +1171,7 @@ int UI_VidInit( void )
 		
 		return 0;
 	}
-	UI_Precache ();
+
 	// Sizes are based on screen height
 	uiStatic.scaleX = uiStatic.scaleY = ScreenHeight / 768.0f;
 	uiStatic.width = ScreenWidth / uiStatic.scaleX;
@@ -1263,7 +1257,6 @@ UI_Init
 void UI_Init( void )
 {
 	// register our cvars and commands
-	ui_precache = EngFuncs::CvarRegister( "ui_precache", "0", FCVAR_ARCHIVE );
 	ui_showmodels = EngFuncs::CvarRegister( "ui_showmodels", "0", FCVAR_ARCHIVE );
 	ui_show_window_stack = EngFuncs::CvarRegister( "ui_show_window_stack", 0, FCVAR_ARCHIVE );
 
@@ -1271,24 +1264,16 @@ void UI_Init( void )
 	EngFuncs::CvarRegister( "menu_mp_firsttime", "1", FCVAR_ARCHIVE );
 
 	EngFuncs::Cmd_AddCommand( "menu_main", UI_Main_Menu );
-	EngFuncs::Cmd_AddCommand( "menu_newgame", UI_NewGame_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_options", UI_Options_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_multiplayer", UI_MultiPlayer_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_langame", UI_LanGame_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_internetgames", UI_InternetGames_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_audio", UI_Audio_Menu );
-	EngFuncs::Cmd_AddCommand( "menu_loadgame", UI_LoadGame_Menu );
-	EngFuncs::Cmd_AddCommand( "menu_savegame", UI_SaveGame_Menu );
-	EngFuncs::Cmd_AddCommand( "menu_saveload", UI_SaveLoad_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_playersetup", UI_PlayerSetup_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_controls", UI_Controls_Menu );
-	EngFuncs::Cmd_AddCommand( "menu_advcontrols", UI_AdvControls_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_gameoptions", UI_GameOptions_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_creategame", UI_CreateGame_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_video", UI_Video_Menu );
-	EngFuncs::Cmd_AddCommand( "menu_vidoptions", UI_VidOptions_Menu );
-	EngFuncs::Cmd_AddCommand( "menu_vidmodes", UI_VidModes_Menu );
-	EngFuncs::Cmd_AddCommand( "menu_customgame", UI_CustomGame_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_touch", UI_Touch_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_touchoptions", UI_TouchOptions_Menu );
 	EngFuncs::Cmd_AddCommand( "menu_touchbuttons", UI_TouchButtons_Menu );
@@ -1309,9 +1294,6 @@ void UI_Init( void )
 	// load custom strings
 	UI_LoadCustomStrings();
 
-	// load scr
-	UI_LoadScriptConfig();
-
 	//CR
 	CMenuPicButton::ClearButtonStack();
 }
@@ -1327,31 +1309,22 @@ void UI_Shutdown( void )
 		return;
 
 	EngFuncs::Cmd_RemoveCommand( "menu_main" );
-	EngFuncs::Cmd_RemoveCommand( "menu_newgame" );
-	EngFuncs::Cmd_RemoveCommand( "menu_loadgame" );
-	EngFuncs::Cmd_RemoveCommand( "menu_savegame" );
-	EngFuncs::Cmd_RemoveCommand( "menu_saveload" );
-	EngFuncs::Cmd_RemoveCommand( "menu_multiplayer" );
 	EngFuncs::Cmd_RemoveCommand( "menu_options" );
+	EngFuncs::Cmd_RemoveCommand( "menu_multiplayer" );
 	EngFuncs::Cmd_RemoveCommand( "menu_langame" );
 	EngFuncs::Cmd_RemoveCommand( "menu_internetgames" );
 	EngFuncs::Cmd_RemoveCommand( "menu_playersetup" );
 	EngFuncs::Cmd_RemoveCommand( "menu_controls" );
-	EngFuncs::Cmd_RemoveCommand( "menu_advcontrols" );
 	EngFuncs::Cmd_RemoveCommand( "menu_gameoptions" );
 	EngFuncs::Cmd_RemoveCommand( "menu_creategame" );
 	EngFuncs::Cmd_RemoveCommand( "menu_audio" );
 	EngFuncs::Cmd_RemoveCommand( "menu_video" );
-	EngFuncs::Cmd_RemoveCommand( "menu_vidoptions" );
-	EngFuncs::Cmd_RemoveCommand( "menu_vidmodes" );
-	EngFuncs::Cmd_RemoveCommand( "menu_customgame" );
 	EngFuncs::Cmd_RemoveCommand( "menu_touch" );
 	EngFuncs::Cmd_RemoveCommand( "menu_touchoptions" );
 	EngFuncs::Cmd_RemoveCommand( "menu_touchbuttons" );
 	EngFuncs::Cmd_RemoveCommand( "menu_touchedit" );
 	EngFuncs::Cmd_RemoveCommand( "menu_filedialog" );
 	EngFuncs::Cmd_RemoveCommand( "menu_gamepad" );
-	EngFuncs::Cmd_RemoveCommand( "menu_zoo" );
 
 	memset( &uiStatic, 0, sizeof( uiStatic_t ));
 }

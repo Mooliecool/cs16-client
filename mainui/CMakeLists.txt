@@ -27,70 +27,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 set (MAINUI_LIBRARY xashmenu)
 
-set (MAINUI_CONTROLS_SOURCES
-	controls/Framework.cpp
-	controls/BaseItem.cpp
-	controls/Action.cpp
-	controls/Bitmap.cpp
-	controls/CheckBox.cpp
-	controls/ItemsHolder.cpp
-	controls/Field.cpp
-	controls/PicButton.cpp
-	controls/ScrollList.cpp
-	controls/Slider.cpp
-	controls/SpinControl.cpp
-	controls/YesNoMessageBox.cpp
-	controls/MessageBox.cpp
-	controls/Editable.h
-	controls/Switch.cpp
-	controls/BaseWindow.cpp
-	controls/ProgressBar.cpp
-	controls/BackgroundBitmap.cpp
-	)
-
-set (MAINUI_MENUS_SOURCES
-	menus/AdvancedControls.cpp
-	menus/Audio.cpp
-	menus/Configuration.cpp
-	menus/Controls.cpp
-	menus/CreateGame.cpp
-	menus/Credits.cpp
-	menus/CustomGame.cpp
-	menus/FileDialog.cpp
-	menus/GameOptions.cpp
-	menus/Gamepad.cpp
-	menus/LoadGame.cpp
-	menus/Main.cpp
-	menus/Multiplayer.cpp
-	menus/NewGame.cpp
-	menus/PlayerSetup.cpp
-	menus/SaveLoad.cpp
-	menus/ServerBrowser.cpp
-	menus/TouchButtons.cpp
-	menus/Touch.cpp
-	menus/TouchEdit.cpp
-	menus/TouchOptions.cpp
-	menus/Video.cpp
-	menus/VideoModes.cpp
-	menus/VideoOptions.cpp
-	menus/Zoo.cpp
-	menus/ConnectionProgress.cpp
-	menus/dynamic/ScriptMenu.cpp
-	)
-
-set (MAINUI_SOURCES
-	EventSystem.h
-	BaseMenu.cpp
-	Btns.cpp
-	MenuStrings.cpp
-	CFGScript.cpp
-	Utils.cpp
-	Scissor.cpp
-	udll_int.cpp
-	)
-
-list(APPEND MAINUI_SOURCES ${MAINUI_CONTROLS_SOURCES})
-list(APPEND MAINUI_SOURCES ${MAINUI_MENUS_SOURCES})
+set (MAINUI_SOURCES udll_int.cpp )
 
 if( NOT WIN32 AND NOT MINGW )
 	add_compile_options( -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-unused-variable )
@@ -100,8 +37,10 @@ if( NOT XASH_SDK )
 	set( XASH_SDK "../" )
 endif( )
 
-include_directories (${XASH_SDK}/common ${XASH_SDK}/engine ${XASH_SDK}/pm_shared . controls/ menus/)
+include_directories (${XASH_SDK}/common ${XASH_SDK}/engine ${XASH_SDK}/pm_shared . controls/ menus/ ../public )
 add_library (${MAINUI_LIBRARY} SHARED ${MAINUI_SOURCES})
+add_compile_options(-Wl,--no-undefined)
+add_definitions( -DMAINUI_STUB )
 
 if( MSVC )
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)

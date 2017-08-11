@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 
-#include "extdll.h"
+#include "extdll_menu.h"
 #include "BaseMenu.h"
 #include "Action.h"
 #include "Bitmap.h"
@@ -50,123 +50,27 @@ private:
 	virtual void _VidInit( );
 
 	void QuitDialog();
+	void DisconnectDialog();
 	DECLARE_EVENT_TO_MENU_METHOD( CMenuMain, QuitDialog )
-	static void DisconnectDialogCb( CMenuBaseItem *pSelf, void *pExtra );
-	static void HazardCourseDialogCb( CMenuBaseItem *pSelf, void *pExtra );
-	static void HazardCourseCb( CMenuBaseItem *pSelf, void *pExtra );
+	DECLARE_EVENT_TO_MENU_METHOD( CMenuMain, DisconnectDialog )
 	static void DisconnectCb( CMenuBaseItem *pSelf, void *pExtra );
 	static void QuitCb( CMenuBaseItem *, void * );
 
 	CMenuPicButton	console;
-	class CMenuMainBackground : public CMenuBackgroundBitmap
-	{
-	public:
-		virtual void Draw();
-	} background;
-	class CMenuMainBanner : public CMenuBannerBitmap
-	{
-	public:
-		virtual void Draw();
-	private:
-		HIMAGE pic;
-	} banner;
 
 	CMenuPicButton	resumeGame;
 	CMenuPicButton	disconnect;
-	CMenuPicButton	newGame;
-	CMenuPicButton	hazardCourse;
+	CMenuPicButton  createGame;
 	CMenuPicButton	configuration;
-	CMenuPicButton	saveRestore;
 	CMenuPicButton	multiPlayer;
-	CMenuPicButton	customGame;
 	CMenuPicButton	previews;
 	CMenuPicButton	quit;
 
-	// buttons on top right. Maybe should be drawn if fullscreen == 1?
-	CMenuBitmap	minimizeBtn;
-	CMenuBitmap	quitButton;
-
 	// quit dialog
 	CMenuYesNoMessageBox dialog;
-
-	bool bTrainMap;
-	bool bCustomGame;
 };
 
 static CMenuMain uiMain;
-
-/*
-=================
-CMenuMain::CMenuMainBackground::Draw
-=================
-*/
-void CMenuMain::CMenuMainBackground::Draw( )
-{
-	// map has background
-	if( EngFuncs::GetCvarFloat( "cl_background" ))
-		return;
-
-	CMenuBackgroundBitmap::Draw();
-}
-
-void CMenuMain::CMenuMainBanner::Draw()
-{
-	if( !uiMain.background.ShouldDrawLogoMovie() )
-		return; // no logos for steam background
-
-	if( EngFuncs::GetLogoLength() <= 0.05f || EngFuncs::GetLogoWidth() <= 32 )
-		return;	// don't draw stub logo (GoldSrc rules)
-
-	float	logoWidth, logoHeight, logoPosY;
-	float	scaleX, scaleY;
-
-	scaleX = ScreenWidth / 640.0f;
-	scaleY = ScreenHeight / 480.0f;
-
-	logoWidth = EngFuncs::GetLogoWidth() * scaleX;
-	logoHeight = EngFuncs::GetLogoHeight() * scaleY;
-	logoPosY = 70 * scaleY;	// 70 it's empirically determined value (magic number)
-
-	EngFuncs::DrawLogo( "logo.avi", 0, logoPosY, logoWidth, logoHeight );
-
-#if 0
-	if( !pic )
-		return;
-	Size big, small;
-	//wrect_t meow = { 0, 0, EngFuncs::PIC_Width( pic ) / 2, EngFuncs::PIC_Height( pic ) };
-
-	big = small = m_scSize;
-	small.w *= 2 * uiStatic.scaleX;
-	small.h *= 2 * uiStatic.scaleY;
-	big.w *= 5 * uiStatic.scaleX;
-	big.h *= 5 * uiStatic.scaleY;
-
-	Point pos1, pos2;
-	float offset;
-	float x = (float)uiStatic.realTime / 1200;
-	offset = (1 + 0.5 * cos(x))  * sin( 5 * x / 2);
-
-	pos1.x = UI_BANNER_POSX*1.5 + 128 * offset;
-	pos1.y = UI_BANNER_POSY + big.h;
-
-	pos2.x = -(small.w / 3) + 300 * offset;
-	pos2.y = UI_BANNER_POSY - 20;
-
-	pos1 = pos1.Scale();
-	pos2 = pos2.Scale();
-
-	EngFuncs::PIC_Set( pic, 255, 255, 255 );
-	EngFuncs::PIC_DrawAdditive( pos1.x, pos2.y, small.w, small.h );
-
-	EngFuncs::PIC_Set( pic, 255, 255, 255 );
-	EngFuncs::PIC_DrawAdditive( pos2.x, pos2.y, big.w, big.h );
-#endif
-}
-
-void CMenuMain::QuitCb(CMenuBaseItem *, void *)
-{
-	EngFuncs::ClientCmd( FALSE, "quit\n" );
-}
 
 void CMenuMain::QuitDialog()
 {
@@ -176,28 +80,19 @@ void CMenuMain::QuitDialog()
 	else
 		dialog.SetMessage( MenuStrings[IDS_MAIN_QUITPROMPT] );
 
-	dialog.onPositive = QuitCb;
+	dialog.onPositive.SetCommand( FALSE, "quit\n" );
 	dialog.Show();
 }
 
-void CMenuMain::DisconnectDialogCb( CMenuBaseItem *pSelf , void *pExtra)
+void CMenuMain::DisconnectDialog()
 {
-	CMenuMain *parent = (CMenuMain*)pSelf->Parent();
-
-	parent->dialog.onPositive = DisconnectCb;
-	parent->dialog.SetMessage( "Really disconnect?" );
-	parent->dialog.Show();
+	dialog.Link( this );
+	dialog.SetMessage( "Really disconnect?" );
+	dialog.onPositive = DisconnectCb;
+	dialog.Show();
 }
 
-void CMenuMain::HazardCourseDialogCb(CMenuBaseItem *pSelf, void *pExtra)
-{
-	CMenuMain *parent = (CMenuMain*)pSelf->Parent();
 
-	parent->dialog.onPositive = HazardCourseCb;
-	parent->dialog.SetMessage( MenuStrings[IDS_TRAINING_EXITCURRENT] );
-	parent->dialog.Show();
-
-}
 
 /*
 =================
@@ -242,34 +137,12 @@ const char *CMenuMain::Activate( void )
 
 	if( gpGlobals->developer )
 	{
-		console.pos.y = CL_IsActive() ? 130 : 230;
+		console.pos.y = CL_IsActive() ? 280 : 380;
 	}
 
 	CMenuPicButton::ClearButtonStack();
 
 	return 0;
-}
-
-/*
-=================
-UI_Main_HazardCourse
-=================
-*/
-void CMenuMain::HazardCourseCb( CMenuBaseItem *pSelf, void* )
-{
-	if( EngFuncs::GetCvarFloat( "host_serverstate" ) && EngFuncs::GetCvarFloat( "maxplayers" ) > 1 )
-		EngFuncs::HostEndGame( "end of the game" );
-
-	EngFuncs::CvarSetValue( "skill", 1.0f );
-	EngFuncs::CvarSetValue( "deathmatch", 0.0f );
-	EngFuncs::CvarSetValue( "teamplay", 0.0f );
-	EngFuncs::CvarSetValue( "pausable", 1.0f ); // singleplayer is always allowing pause
-	EngFuncs::CvarSetValue( "coop", 0.0f );
-
-	EngFuncs::PlayBackgroundTrack( NULL, NULL );
-
-	EngFuncs::ClientCmd( FALSE, "hazardcourse\n" );
-	((CMenuMain*)pSelf->Parent())->dialog.Hide( );
 }
 
 void CMenuMain::DisconnectCb( CMenuBaseItem *pSelf, void* )
@@ -280,14 +153,6 @@ void CMenuMain::DisconnectCb( CMenuBaseItem *pSelf, void* )
 
 void CMenuMain::_Init( void )
 {
-	if( gMenu.m_gameinfo.trainmap[0] && stricmp( gMenu.m_gameinfo.trainmap, gMenu.m_gameinfo.startmap ) != 0 )
-		bTrainMap = true;
-	else bTrainMap = false;
-
-	if( EngFuncs::GetCvarFloat( "host_allow_changegame" ))
-		bCustomGame = true;
-	else bCustomGame = false;
-
 	// console
 	console.SetNameAndStatus( "Console", "Show console" );
 	console.iFlags |= QMF_NOTIFY;
@@ -309,16 +174,10 @@ void CMenuMain::_Init( void )
 	disconnect.iFlags |= QMF_NOTIFY;
 	disconnect.onActivated = DisconnectDialogCb;
 
-	newGame.SetNameAndStatus( "New Game", MenuStrings[IDS_MAIN_NEWGAMEHELP] );
-	newGame.SetPicture( PC_NEW_GAME );
-	newGame.iFlags |= QMF_NOTIFY;
-	newGame.onActivated = UI_NewGame_Menu;
-
-	hazardCourse.SetNameAndStatus( "Hazard Course", MenuStrings[IDS_MAIN_TRAININGHELP] );
-	hazardCourse.SetPicture( PC_HAZARD_COURSE );
-	hazardCourse.iFlags |= QMF_NOTIFY;
-	hazardCourse.onActivatedClActive = HazardCourseDialogCb;
-	hazardCourse.onActivated = HazardCourseCb;
+	createGame.SetNameAndStatus( "Create game", "Create server for Internet or local play" );
+	createGame.SetPicture( PC_CREATE_GAME );
+	createGame.iFlags |= QMF_NOTIFY;
+	createGame.onActivated = UI_InternetGames_Menu;
 
 	multiPlayer.SetNameAndStatus( "Multiplayer", MenuStrings[IDS_MAIN_MULTIPLAYERHELP] );
 	multiPlayer.SetPicture( PC_MULTIPLAYER );
@@ -330,83 +189,28 @@ void CMenuMain::_Init( void )
 	configuration.iFlags |= QMF_NOTIFY;
 	configuration.onActivated = UI_Options_Menu;
 
-	saveRestore.iFlags |= QMF_NOTIFY;
-	saveRestore.onActivatedClActive = UI_SaveLoad_Menu;
-	saveRestore.onActivated = UI_LoadGame_Menu;
-
-	customGame.SetNameAndStatus( "Custom Game", MenuStrings[IDS_MAIN_CUSTOMHELP] );
-	customGame.SetPicture( PC_CUSTOM_GAME );
-	customGame.iFlags |= QMF_NOTIFY;
-	customGame.onActivated = UI_CustomGame_Menu;
-
-	previews.SetNameAndStatus( "Previews", MenuStrings[ IDS_MAIN_PREVIEWSHELP ] );
-	previews.SetPicture( PC_PREVIEWS );
+	previews.SetNameAndStatus( "View readme", "Read about CS16Client developers");
+	previews.SetPicture( PC_VIEW_README );
 	previews.iFlags |= QMF_NOTIFY;
-	SET_EVENT( previews, onActivated )
-	{
-		EngFuncs::ShellExecute( MenuStrings[IDS_MEDIA_PREVIEWURL], NULL, false );
-	}
-	END_EVENT( previews, onActivated )
+	previews.onActivated = UI_Credits_Menu;
 
 	quit.SetNameAndStatus( "Quit", MenuStrings[IDS_MAIN_QUITPROMPT] );
 	quit.SetPicture( PC_QUIT );
 	quit.iFlags |= QMF_NOTIFY;
 	quit.onActivated = QuitDialogCb;
 
-	quitButton.SetPicture( ART_CLOSEBTN_N, ART_CLOSEBTN_F, ART_CLOSEBTN_D );
-	quitButton.iFlags = QMF_MOUSEONLY|QMF_ACT_ONRELEASE;
-	quitButton.eFocusAnimation = QM_HIGHLIGHTIFFOCUS;
-	quitButton.onActivated = QuitDialogCb;
-
-	minimizeBtn.SetPicture( ART_MINIMIZE_N, ART_MINIMIZE_F, ART_MINIMIZE_D );
-	minimizeBtn.iFlags = QMF_MOUSEONLY|QMF_ACT_ONRELEASE;
-	minimizeBtn.eFocusAnimation = QM_HIGHLIGHTIFFOCUS;
-	minimizeBtn.onActivated.SetCommand( FALSE, "minimize\n" );
-
-	if ( gMenu.m_gameinfo.gamemode == GAME_MULTIPLAYER_ONLY || gMenu.m_gameinfo.startmap[0] == 0 )
-		newGame.iFlags |= QMF_GRAYED;
-
-	if ( gMenu.m_gameinfo.gamemode == GAME_SINGLEPLAYER_ONLY )
-		multiPlayer.iFlags |= QMF_GRAYED;
-
-	if ( gMenu.m_gameinfo.gamemode == GAME_MULTIPLAYER_ONLY )
-	{
-		saveRestore.iFlags |= QMF_GRAYED;
-		hazardCourse.iFlags |= QMF_GRAYED;
-	}
-
-	// server.dll needs for reading savefiles or startup newgame
-	if( !EngFuncs::CheckGameDll( ))
-	{
-		saveRestore.iFlags |= QMF_GRAYED;
-		hazardCourse.iFlags |= QMF_GRAYED;
-		newGame.iFlags |= QMF_GRAYED;
-	}
-
 	AddItem( background );
-	AddItem( banner );
 
 	if ( gpGlobals->developer )
 		AddItem( console );
 
 	AddItem( disconnect );
 	AddItem( resumeGame );
-	AddItem( newGame );
-
-	if ( bTrainMap )
-		AddItem( hazardCourse );
-
-	AddItem( saveRestore );
+	AddItem( createGame );
 	AddItem( configuration );
 	AddItem( multiPlayer );
-
-	if ( bCustomGame )
-		AddItem( customGame );
-
 	AddItem( previews );
 	AddItem( quit );
-	AddItem( minimizeBtn );
-	AddItem( quitButton );
 }
 
 /*
@@ -419,39 +223,13 @@ void CMenuMain::_VidInit( void )
 	Activate();
 
 	console.pos.x = 72;
-	resumeGame.SetCoord( 72, 230 );
-	disconnect.SetCoord( 72, 180 );
-	newGame.SetCoord( 72, 280 );
-	hazardCourse.SetCoord( 72, 330 );
-
-	if( CL_IsActive( ))
-	{
-		saveRestore.SetNameAndStatus( "Save\\Load Game", MenuStrings[IDS_MAIN_LOADSAVEHELP] );
-		saveRestore.SetPicture( PC_SAVE_LOAD_GAME );
-	}
-	else
-	{
-		saveRestore.SetNameAndStatus( "Load Game", MenuStrings[IDS_MAIN_LOADHELP] );
-		saveRestore.SetPicture( PC_LOAD_GAME );
-	}
-
-	saveRestore.SetCoord( 72, bTrainMap ? 380 : 330 );
-	configuration.SetCoord( 72, bTrainMap ? 430 : 380 );
-	multiPlayer.SetCoord( 72, bTrainMap ? 480 : 430 );
-
-	customGame.SetCoord( 72, bTrainMap ? 530 : 480 );
-
-	previews.SetCoord( 72, (bCustomGame) ? (bTrainMap ? 580 : 530) : (bTrainMap ? 530 : 480) );
-
-	// too short execute string - not a real command
-	if( strlen( MenuStrings[IDS_MEDIA_PREVIEWURL] ) <= 3 )
-		previews.iFlags |= QMF_GRAYED;
-
-	quit.SetCoord( 72, (bCustomGame) ? (bTrainMap ? 630 : 580) : (bTrainMap ? 580 : 530));
-
-	minimizeBtn.SetRect( uiStatic.width - 72, 13, 32, 32 );
-
-	quitButton.SetRect( uiStatic.width - 36, 13, 32, 32 );
+	resumeGame.SetCoord( 72, 330 );
+	disconnect.SetCoord( 72, 380 );
+	createGame.SetCoord( 72, 430 );
+	configuration.SetCoord( 72, 480 );
+	multiPlayer.SetCoord( 72, 530 );
+	previews.SetCoord( 72, 580 );
+	quit.SetCoord( 72, 630 );
 }
 
 /*
@@ -461,15 +239,6 @@ UI_Main_Precache
 */
 void UI_Main_Precache( void )
 {
-	EngFuncs::PIC_Load( ART_MINIMIZE_N );
-	EngFuncs::PIC_Load( ART_MINIMIZE_F );
-	EngFuncs::PIC_Load( ART_MINIMIZE_D );
-	EngFuncs::PIC_Load( ART_CLOSEBTN_N );
-	EngFuncs::PIC_Load( ART_CLOSEBTN_F );
-	EngFuncs::PIC_Load( ART_CLOSEBTN_D );
-
-	// precache .avi file and get logo width and height
-	EngFuncs::PrecacheLogo( "logo.avi" );
 }
 
 /*

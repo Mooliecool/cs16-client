@@ -193,4 +193,6 @@ typedef struct
 typedef int (*MENUAPI)( UI_FUNCTIONS *pFunctionTable, ui_enginefuncs_t* engfuncs, ui_globalvars_t *pGlobals );
 
 typedef int (*UITEXTAPI)( ui_textfuncs_t* engfuncs );
+
+typedef void (*ADDTOUCHBUTTONTOLIST)( const char *name, const char *texture, const char *command, unsigned char *color, int flags );
 #endif//MENU_INT_H

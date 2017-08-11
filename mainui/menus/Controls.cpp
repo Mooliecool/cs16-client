@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "extdll.h"
+#include "extdll_menu.h"
 #include "BaseMenu.h"
 #include "Utils.h"
 #include "keydefs.h"
@@ -70,7 +70,6 @@ private:
 
 	// state toggle by
 	CMenuPicButton defaults;
-	CMenuPicButton advanced;
 	CMenuPicButton done;
 	CMenuPicButton cancel;
 	CMenuScrollList keysList;
@@ -363,18 +362,13 @@ void CMenuControls::_Init( void )
 	defaults.SetPicture( PC_USE_DEFAULTS );
 	defaults.onActivated = msgBox2.MakeOpenEvent();
 
-	advanced.SetNameAndStatus( "Adv controls", "Change mouse sensitivity, enable autoaim, mouselook and crosshair" );
-	advanced.SetCoord( 72, 280 );
-	advanced.SetPicture( PC_ADV_CONTROLS );
-	advanced.onActivated = UI_AdvControls_Menu;
-
 	done.SetNameAndStatus( "Ok", "Save changed and return to configuration menu" );
-	done.SetCoord( 72, 330 );
+	done.SetCoord( 72, 280 );
 	done.SetPicture( PC_DONE );
 	done.onActivated = SaveAndPopMenuCb;
 
 	cancel.SetNameAndStatus( "Cancel", "Discard changes and return to configuration menu" );
-	cancel.SetCoord( 72, 380 );
+	cancel.SetCoord( 72, 330 );
 	cancel.SetPicture( PC_CANCEL );
 	SET_EVENT( cancel, onActivated )
 	{
@@ -399,7 +393,6 @@ void CMenuControls::_Init( void )
 	AddItem( background );
 	AddItem( banner );
 	AddItem( defaults );
-	AddItem( advanced );
 	AddItem( done );
 	AddItem( cancel );
 	AddItem( keysList );

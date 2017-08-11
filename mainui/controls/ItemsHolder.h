@@ -41,6 +41,7 @@ public:
 
 	DECLARE_EVENT_TO_MENU_METHOD( CMenuItemsHolder, Show );
 	DECLARE_EVENT_TO_MENU_METHOD( CMenuItemsHolder, Hide );
+	DECLARE_EVENT_TO_MENU_METHOD( CMenuItemsHolder, ToggleVisibility );
 
 protected:
 	virtual void _Init() {}

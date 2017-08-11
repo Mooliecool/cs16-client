@@ -14,10 +14,12 @@ GNU General Public License for more details.
 */
 
 
-#include "extdll.h"
+#include "extdll_menu.h"
 #include "BaseMenu.h"
+#include "Utils.h"
 #include "enginecallback.h"
 #include "CFGScript.h"
+#include "vgui_parser.h"
 
 #define CVAR_USERINFO BIT(1)
 
@@ -104,6 +106,16 @@ bool CSCR_ParseSingleCvar( parserstate_t *ps, scrvardef_t *result )
 	if( !CSCR_ExpectString( ps, "{", false, true ) )
 		goto error;
 
+	if( result->desc[0] == '#' )
+	{
+		const char *localized = Localize( result->desc + 1 );
+		if( localized != result->desc + 1 )
+		{
+			strncpy( result->desc, localized, MAX_STRING - 1);
+			result->desc[MAX_STRING-1] = 0;
+		}
+	}
+
 	result->type = CSCR_ParseType( ps );
 
 	switch( result->type )
@@ -150,6 +162,10 @@ bool CSCR_ParseSingleCvar( parserstate_t *ps, scrvardef_t *result )
 
 			entry = (scrvarlistentry_t*)MALLOC( sizeof( scrvarlistentry_t ) );
 			entry->next = NULL;
+			if( szName[0] == '#' )
+			{
+				szName = (char*)Localize( szName + 1 );
+			}
 			entry->szName = (char*)MALLOC( strlen( szName ) + 1 );
 			strcpy( entry->szName, szName );
 			entry->flValue = atof( szValue );

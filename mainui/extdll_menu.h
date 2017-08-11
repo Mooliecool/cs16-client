@@ -13,8 +13,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-#ifndef EXTDLL_H
-#define EXTDLL_H
+#ifndef EXTDLL_MENU_H
+#define EXTDLL_MENU_H
 
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
@@ -38,6 +38,8 @@ GNU General Public License for more details.
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
+
+#include <dlfcn.h>
 
 // C++11 stuff
 #ifndef MY_COMPILER_SUCKS
@@ -72,4 +74,4 @@ typedef unsigned int uint;
 
 #include "menu_int.h"
 
-#endif//EXTDLL_H
+#endif//EXTDLL_MENU_H
