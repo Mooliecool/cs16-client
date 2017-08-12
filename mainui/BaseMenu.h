@@ -188,6 +188,8 @@ typedef struct
 	int		buttons_draw_height;
 	int		width;
 	bool		textInput;
+	
+	int clientMenuShown;
 } uiStatic_t;
 
 extern float	cursorDY;			// use for touch scroll

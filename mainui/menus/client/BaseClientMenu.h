@@ -11,7 +11,7 @@ public:
 
 	virtual void Hide();
 	virtual void Show();
-	virtual bool IsVisible();
+	// virtual bool IsVisible();
 };
 
 #endif // BASECLIENTMENU_H

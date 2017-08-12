@@ -554,7 +554,7 @@ void UI_UpdateMenu( float flTime )
 	if( !uiStatic.precached )
 		UI_Precache ();
 
-	if( !uiStatic.visible )
+	if( UI_IsVisible() )
 		return;
 
 	if( !uiStatic.menuActive )
@@ -956,7 +956,7 @@ int UI_IsVisible( void )
 {
 	if( !uiStatic.initialized )
 		return false;
-	return uiStatic.visible;
+	return uiStatic.visible || uiStatic.clientMenuShown;
 }
 
 void UI_GetCursorPos( int *pos_x, int *pos_y )
