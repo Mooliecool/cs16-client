@@ -79,6 +79,7 @@ extern "C" EXPORT int GiveTextAPI( ui_textfuncs_t* pTextfuncsFromEngine )
 #include <string.h>
 #include <stdio.h>
 #include <dlfcn.h>
+#include <stdlib.h>
 
 typedef unsigned char byte;
 
