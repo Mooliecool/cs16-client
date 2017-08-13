@@ -1,7 +1,7 @@
 #ifndef CMENUPROGRESSBAR_H
 #define CMENUPROGRESSBAR_H
-#include "extdll_menu.h"
 
+#include "BaseItem.h"
 
 class CMenuProgressBar : public CMenuBaseItem
 {

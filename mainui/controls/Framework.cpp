@@ -1,6 +1,4 @@
-#include "extdll_menu.h"
-#include "BaseMenu.h"
-#include "Utils.h"
+#include "Framework.h"
 #include "PicButton.h"
 
 CMenuFramework::CMenuFramework( const char *name ) : CMenuBaseWindow( name )

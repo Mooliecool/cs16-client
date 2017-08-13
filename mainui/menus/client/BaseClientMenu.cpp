@@ -1,6 +1,6 @@
 #include "BaseClientMenu.h"
 
-CMenBaseClientWindow::CMenuBaseClientWindow(const char *name) : CMenuBaseWindow(name)
+CMenuBaseClientWindow::CMenuBaseClientWindow(const char *name) : CMenuBaseWindow(name)
 {
 }
 
@@ -8,12 +8,12 @@ void CMenuBaseClientWindow::Show()
 {
 	CMenuBaseWindow::Show();
 	
-	uiStatic.clientWindowShown++;
+	uiStatic.clientMenuShown++;
 }
 
 void CMenuBaseClientWindow::Hide()
 {
 	CMenuBaseWindow::Hide();
 	
-	uiStatic.clientWindowShown--;
+	uiStatic.clientMenuShown--;
 }

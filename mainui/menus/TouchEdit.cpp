@@ -22,10 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * This is empty menu that allows engine to draw touch editor
  */
 
-#include "extdll_menu.h"
-#include "BaseMenu.h"
-#include "Utils.h"
-#include "keydefs.h"
+#include "Framework.h"
 
 class CMenuTouchEdit : public CMenuFramework
 {

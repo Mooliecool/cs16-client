@@ -18,6 +18,7 @@ GNU General Public License for more details.
 #include "BaseMenu.h"
 #include "BackgroundBitmap.h"
 #include "Utils.h"
+#include "ItemsHolder.h"
 
 bool CMenuBackgroundBitmap::s_bEnableLogoMovie = false;
 Size CMenuBackgroundBitmap::s_BackgroundImageSize;

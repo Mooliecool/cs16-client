@@ -18,7 +18,7 @@ GNU General Public License for more details.
 #include "BaseMenu.h"
 #include "Field.h"
 #include "Utils.h"
-
+#include "ItemsHolder.h"
 
 CMenuField::CMenuField() : CMenuEditable(), szBuffer()
 {

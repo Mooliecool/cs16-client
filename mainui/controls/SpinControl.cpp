@@ -14,10 +14,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-#include "extdll_menu.h"
 #include "BaseMenu.h"
 #include "SpinControl.h"
-#include "Utils.h"
+#include "ItemsHolder.h"
 
 CMenuSpinControl::CMenuSpinControl()  : CMenuEditable(), m_szBackground(),
 		m_szLeftArrow(), m_szRightArrow(), m_szLeftArrowFocus(), m_szRightArrowFocus(),

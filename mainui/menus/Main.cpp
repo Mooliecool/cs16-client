@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 
-#include "extdll_menu.h"
+#include "Framework.h"
 #include "BaseMenu.h"
 #include "Action.h"
 #include "Bitmap.h"

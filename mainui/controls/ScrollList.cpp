@@ -19,6 +19,7 @@ GNU General Public License for more details.
 #include "ScrollList.h"
 #include "Utils.h"
 #include "Scissor.h"
+#include "ItemsHolder.h"
 
 CMenuScrollList::CMenuScrollList() : CMenuBaseItem()
 {

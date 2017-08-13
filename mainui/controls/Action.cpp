@@ -18,6 +18,7 @@ GNU General Public License for more details.
 #include "BaseMenu.h"
 #include "Action.h"
 #include "Utils.h"
+#include "ItemsHolder.h"
 
 
 CMenuAction::CMenuAction() : CMenuBaseItem()

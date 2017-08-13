@@ -554,7 +554,7 @@ void UI_UpdateMenu( float flTime )
 	if( !uiStatic.precached )
 		UI_Precache ();
 
-	if( UI_IsVisible() )
+	if( !UI_IsVisible() )
 		return;
 
 	if( !uiStatic.menuActive )

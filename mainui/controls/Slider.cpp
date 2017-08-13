@@ -14,10 +14,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
-#include "extdll_menu.h"
 #include "BaseMenu.h"
 #include "Slider.h"
-#include "Utils.h"
+#include "ItemsHolder.h"
 
 CMenuSlider::CMenuSlider() : CMenuEditable(), m_flMinValue(), m_flMaxValue(), m_flCurValue(),
 	m_flDrawStep(), m_iNumSteps(), m_flRange(), m_iKeepSlider()

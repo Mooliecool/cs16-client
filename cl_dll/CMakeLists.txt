@@ -92,11 +92,11 @@ set (WEAPONEVENT_SRCS
 	./events/event_xm1014.cpp
 	./events/event_czerods.cpp
 	./events/hl_events.cpp
-	./ev_common.cpp
+	./events/ev_common.cpp
 )
 
 set (CLWEAPON_SRCS
-	./com_weapons.cpp
+	./cs_wpn/com_weapons.cpp
 	./cs_wpn/cs_baseentity.cpp
 	./cs_wpn/cs_weapons.cpp
 	../dlls/wpn_shared/wpn_ak47.cpp

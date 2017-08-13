@@ -18,6 +18,7 @@ GNU General Public License for more details.
 #include "BaseMenu.h"
 #include "CheckBox.h"
 #include "Utils.h"
+#include "ItemsHolder.h"
 
 CMenuCheckBox::CMenuCheckBox() : CMenuEditable()
 {

@@ -85,49 +85,11 @@ enum
 #define UI_DOWNARROWFOCUS		"gfx/shell/dnarrowf"
 #define UI_DOWNARROWPRESSED		"gfx/shell/dnarrowp"
 
-struct Point
-{
-	Point() {}
-	Point( int x, int y ) : x(x), y(y) {}
-
-	int x, y;
-	Point Scale();
-	friend Point operator +( Point &a, Point &b ) { return Point( a.x + b.x, a.y + b.y ); }
-	friend Point operator -( Point &a, Point &b ) { return Point( a.x - b.x, a.y - b.y ); }
-
-	Point& operator+=( Point &a )
-	{
-		x += a.x;
-		y += a.y;
-		return *this;
-	}
-
-	Point& operator-=( Point &a )
-	{
-		x -= a.x;
-		y -= a.y;
-		return *this;
-	}
-
-	Point operator *( float scale ) { return Point( x * scale, y * scale );	}
-	Point operator /( float scale ) { return Point( x / scale, y / scale );	}
-};
-
-struct Size
-{
-	Size() {}
-	Size( int w, int h ) : w(w), h(h) {}
-
-	int w, h;
-	Size Scale();
-};
-
+#include "Primitive.h"
 #include "extdll_menu.h"
-#include "enginecallback.h"
+#include "enginecallback_menu.h"
 #include "EventSystem.h"
-#include "Framework.h"
-#include "BaseItem.h"
-#include "BaseWindow.h"
+#include "Utils.h"
 
 // =====================================================================
 // Main menu interface
@@ -135,6 +97,8 @@ struct Size
 extern cvar_t	*ui_precache;
 extern cvar_t	*ui_showmodels;
 extern cvar_t   *ui_show_window_stack;
+
+class CMenuBaseWindow;
 
 typedef struct
 {
